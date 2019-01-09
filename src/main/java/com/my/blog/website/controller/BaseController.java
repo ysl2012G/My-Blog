@@ -1,8 +1,9 @@
 package com.my.blog.website.controller;
 
 import com.my.blog.website.model.Vo.UserVo;
-import com.my.blog.website.utils.TaleUtils;
 import com.my.blog.website.utils.MapCache;
+import com.my.blog.website.utils.TaleUtils;
+import org.springframework.ui.Model;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -17,27 +18,27 @@ public abstract class BaseController {
 
     /**
      * 主页的页面主题
-     * @param viewName
-     * @return
+     * @param viewName 页面
+     * @return 返回thymeleaf名称
      */
-    public String render(String viewName) {
+    protected String render(String viewName) {
         return THEME + "/" + viewName;
     }
 
-    public BaseController title(HttpServletRequest request, String title) {
-        request.setAttribute("title", title);
+    public BaseController title(Model model, String title) {
+        model.addAttribute("title", title);
         return this;
     }
 
-    public BaseController keywords(HttpServletRequest request, String keywords) {
-        request.setAttribute("keywords", keywords);
+    public BaseController keywords(Model model, String keywords) {
+        model.addAttribute("keywords", keywords);
         return this;
     }
 
     /**
      * 获取请求绑定的登录对象
-     * @param request
-     * @return
+     * @param request Http Servlet Request
+     * @return login user
      */
     public UserVo user(HttpServletRequest request) {
         return TaleUtils.getLoginUser(request);
@@ -47,7 +48,7 @@ public abstract class BaseController {
         return this.user(request).getUid();
     }
 
-    public String render_404() {
+    protected String render_404() {
         return "comm/error_404";
     }
 
