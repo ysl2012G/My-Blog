@@ -46,7 +46,7 @@
                                     <div class="comment-header">
                                         <!--设置get请求的参数-->
                                         <img class="avatar"
-                                             th:src="@{${commons.gravatar(comment.mail)}(s='80',r='G',d='')}"
+                                             th:src="@{${T(com.my.blog.website.utils.Commons).gravatar(comment.mail)}(s='80',r='G',d='')}"
                                              th:title="${comment.author}"
                                              width="80" height="80"/>
                                         <span class="comment-author">
@@ -56,10 +56,11 @@
                                     </div>
                                     <div class="comment-content">
                                         <span class="comment-author-at"></span>
-                                        <p th:utext="${commons.article(comment.content)}"></p>
+                                        <p th:utext="${T(com.my.blog.website.utils.Commons).article(comment.content)}"></p>
                                     </div>
                                     <div class="comment-meta">
-                                        <time class="comment-time" th:text="${commons.fmtdate(comment.created)}"></time>
+                                        <time class="comment-time"
+                                              th:text="${T(com.my.blog.website.utils.Commons).fmtdate(comment.created)}"></time>
                                         <span class="comment-reply">
                             </span>
                                     </div>

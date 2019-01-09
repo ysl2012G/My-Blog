@@ -7,34 +7,54 @@
         <div class="common-title">
             <th:block th:text="${type}"/> : <th:block th:text="${keyword}"/>
         </div>
-        <th:block th:if="${commons.is_empty(articles)}">
+        <th:block th:if="${T(com.my.blog.website.utils.Commons).is_empty(articles)}">
             <div>
                 <p>抱歉，还没有相关文章.</p>
             </div>
         </th:block>
-        <th:block th:unless="${commons.is_empty(articles)}">
+        <th:block th:unless="${T(com.my.blog.website.utils.Commons).is_empty(articles)}">
             <div class="post-lists">
                 <div class="post-lists-body">
+                    <!--/*@thymesVar id="articles" type="com.github.pagehelper.PageInfo"*/-->
                     <th:block th:each="article : ${articles.list}">
                         <div class="post-list-item">
                             <div class="post-list-item-container ">
                                 <div class="item-label ">
                                     <div class="item-title">
-                                        <a th:href="${commons.permalink(article)}" th:text="${article.title}"></a>
+                                        <a th:href="${T(com.my.blog.website.utils.Commons).permalink(article)}"
+                                           th:text="${article.title}"></a>
                                     </div>
                                     <div class="item-meta clearfix">
-                                        <div th:class="'item-meta-ico '+${commons.show_icon(article.cid)} "
+                                        <div th:class="'item-meta-ico '+${T(com.my.blog.website.utils.Commons).show_icon(article.cid)} "
                                              th:style="'background: url('+@{/user/img/bg-ico.png}+') no-repeat;background-size: 40px auto;'"></div>
-                                        <div class="item-meta-date">发布于 <th:block th:text="${commons.fmtdate(article.created)}"/></div>
+                                        <div class="item-meta-date">发布于
+                                            <th:block
+                                                    th:text="${T(com.my.blog.website.utils.Commons).fmtdate(article.created)}"/>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </th:block>
+                    <div class="lists-navigator clearfix">
+                        <ol class="page-navigator">
+                            <!--/*@thymesVar id="articles" type="com.github.pagehelper.PageInfo"*/-->
+                            <th:block th:if="${articles.hasPreviousPage}">
+                                <li class="prev"><a th:href="'?page='+${articles.prePage}">←</a></li>
+                            </th:block>
+                            <th:block th:each="navIndex : ${articles.navigatepageNums}">
+                                <li th:class="${articles.pageNum}==${navIndex}?'current':' '"><a
+                                        th:href="'?page='+${navIndex}" th:text="${navIndex}"></a>
+                                </li>
+                            </th:block>
+                            <th:block th:if="${articles.hasNextPage}">
+                                <li class="next"><a th:href="'?page='+${articles.nextPage}">→</a></li>
+                            </th:block>
+                        </ol>
+                    </div>
                 </div>
             </div>
         </th:block>
-
     </div>
 </div>
 </body>

@@ -5,6 +5,7 @@
 <div class="main-content archive-page clearfix">
     <div class="categorys-item">
         <th:block th:each="archive : ${archives}">
+            <!--/*@thymesVar id="archive" type="com.my.blog.website.model.Bo.ArchiveBo"*/-->
             <div class="categorys-title" th:text="${archive.date}"></div>
             <div class="post-lists">
                 <div class="post-lists-body">
@@ -13,10 +14,14 @@
                             <div class="post-list-item-container">
                                 <div class="item-label">
                                     <div class="item-title">
-                                        <a th:href="${commons.permalink(article.cid, article.slug)}" th:text="${article.title}"></a>
+                                        <a th:href="${T(com.my.blog.website.utils.Commons).permalink(article.cid, article.slug)}"
+                                           th:text="${article.title}"></a>
                                     </div>
                                     <div class="item-meta clearfix">
-                                        <div class="item-meta-date">发布于 <th:block th:text="${commons.fmtdate(article.created)}"/></div>
+                                        <div class="item-meta-date">发布于
+                                            <th:block
+                                                    th:text="${T(com.my.blog.website.utils.Commons).fmtdate(article.created)}"/>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
