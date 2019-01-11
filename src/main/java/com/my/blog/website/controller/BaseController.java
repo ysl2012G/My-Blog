@@ -1,5 +1,7 @@
 package com.my.blog.website.controller;
 
+import com.my.blog.website.constant.WebConst;
+import com.my.blog.website.model.Bo.RestResponseBo;
 import com.my.blog.website.model.Vo.UserVo;
 import com.my.blog.website.utils.MapCache;
 import com.my.blog.website.utils.TaleUtils;
@@ -50,6 +52,10 @@ public abstract class BaseController {
 
     protected String render_404() {
         return "comm/error_404";
+    }
+
+    protected RestResponseBo isSuccessful(String result) {
+        return WebConst.SUCCESS_RESULT.equals(result) ? RestResponseBo.ok() : RestResponseBo.fail(result);
     }
 
 }

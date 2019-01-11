@@ -305,24 +305,38 @@ public class IndexController extends BaseController {
      * 自定义页面,如关于的页面
      */
     @GetMapping(value = "/{pagename}")
-    public String page(Model model, HttpServletRequest request, @PathVariable String pagename) {
+    public String page(Model model, @PathVariable String pagename, @RequestParam(value = "cp", defaultValue = "1") String cp) {
+        ContentVo contents = contentService.getContents(pagename);
+        if (null == contents || "draft".equals(contents.getStatus())) {
+            return this.render_404();
+        }
+//        if (contents.getAllowComment()) {
+//            String cp = request.getParameter("cp");
+//            if (StringUtils.isBlank(cp)) {
+//                cp = "1";
+//            }
+//            PageInfo<CommentBo> commentsPaginator = commentService.getComments(contents.getCid(), Integer.parseInt(cp), 6);
+//            model.addAttribute("comments", commentsPaginator);
+//        }
+//        model.addAttribute("article", contents);
+//        if (!checkHitsFrequency(request, String.valueOf(contents.getCid()))) {
+//            updateArticleHit(contents.getCid(), contents.getHits());
+//        }
+        completeArticle(model, contents, cp);
+        return this.render("page");
+    }
+
+    @GetMapping("/{pagename}/preview")
+    public String pagePrewview(Model model, @PathVariable(value = "pagename") String
+            pagename, @RequestParam(value = "cp", defaultValue = "1") String cp) {
         ContentVo contents = contentService.getContents(pagename);
         if (null == contents) {
             return this.render_404();
         }
-        if (contents.getAllowComment()) {
-            String cp = request.getParameter("cp");
-            if (StringUtils.isBlank(cp)) {
-                cp = "1";
-            }
-            PageInfo<CommentBo> commentsPaginator = commentService.getComments(contents.getCid(), Integer.parseInt(cp), 6);
-            model.addAttribute("comments", commentsPaginator);
-        }
-        model.addAttribute("article", contents);
-        if (!checkHitsFrequency(request, String.valueOf(contents.getCid()))) {
-            updateArticleHit(contents.getCid(), contents.getHits());
-        }
+        completeArticle(model, contents, cp);
         return this.render("page");
+
+
     }
 
 
