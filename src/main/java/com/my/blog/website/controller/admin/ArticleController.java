@@ -2,7 +2,6 @@ package com.my.blog.website.controller.admin;
 
 
 import com.github.pagehelper.PageInfo;
-import com.my.blog.website.constant.WebConst;
 import com.my.blog.website.controller.BaseController;
 import com.my.blog.website.dto.LogActions;
 import com.my.blog.website.dto.Types;
@@ -20,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -46,13 +46,13 @@ public class ArticleController extends BaseController {
     private ILogService logService;
 
     @GetMapping(value = "")
-    public String index(@RequestParam(value = "page", defaultValue = "1") int page,
-                        @RequestParam(value = "limit", defaultValue = "15") int limit, HttpServletRequest request) {
+    public String index(Model model, @RequestParam(value = "page", defaultValue = "1") int page,
+                        @RequestParam(value = "limit", defaultValue = "15") int limit) {
         ContentVoExample contentVoExample = new ContentVoExample();
         contentVoExample.setOrderByClause("created desc");
         contentVoExample.createCriteria().andTypeEqualTo(Types.ARTICLE.getType());
         PageInfo<ContentVo> contentsPaginator = contentsService.getArticlesWithpage(contentVoExample, page, limit);
-        request.setAttribute("articles", contentsPaginator);
+        model.addAttribute("articles", contentsPaginator);
         return "admin/article_list";
     }
 
@@ -64,18 +64,18 @@ public class ArticleController extends BaseController {
     }
 
     @GetMapping(value = "/{cid}")
-    public String editArticle(@PathVariable String cid, HttpServletRequest request) {
+    public String editArticle(Model model, @PathVariable(required = true) String cid) {
         ContentVo contents = contentsService.getContents(cid);
-        request.setAttribute("contents", contents);
+        model.addAttribute("contents", contents);
         List<MetaVo> categories = metasService.getMetas(Types.CATEGORY.getType());
-        request.setAttribute("categories", categories);
-        request.setAttribute("active", "article");
+        model.addAttribute("categories", categories);
+        model.addAttribute("active", "article");
         return "admin/article_edit";
     }
 
     @PostMapping(value = "/publish")
     @ResponseBody
-    public RestResponseBo publishArticle(ContentVo contents, HttpServletRequest request) {
+    public RestResponseBo publishArticle(@ModelAttribute(value = "contents") ContentVo contents, HttpServletRequest request) {
         UserVo users = this.user(request);
         contents.setAuthorId(users.getUid());
         contents.setType(Types.ARTICLE.getType());
@@ -83,33 +83,42 @@ public class ArticleController extends BaseController {
             contents.setCategories("默认分类");
         }
         String result = contentsService.publish(contents);
-        if (!WebConst.SUCCESS_RESULT.equals(result)) {
-            return RestResponseBo.fail(result);
-        }
-        return RestResponseBo.ok();
+//        if (!WebConst.SUCCESS_RESULT.equals(result)) {
+//            return RestResponseBo.fail(result);
+//        }
+//        return RestResponseBo.ok();
+        return isSuccessful(result);
     }
 
     @PostMapping(value = "/modify")
     @ResponseBody
-    public RestResponseBo modifyArticle(ContentVo contents, HttpServletRequest request) {
+    public RestResponseBo modifyArticle(@ModelAttribute(value = "contents") ContentVo contents, HttpServletRequest request) {
         UserVo users = this.user(request);
         contents.setAuthorId(users.getUid());
         contents.setType(Types.ARTICLE.getType());
         String result = contentsService.updateArticle(contents);
-        if (!WebConst.SUCCESS_RESULT.equals(result)) {
-            return RestResponseBo.fail(result);
-        }
-        return RestResponseBo.ok();
+//        if (!WebConst.SUCCESS_RESULT.equals(result)) {
+//            return RestResponseBo.fail(result);
+//        }
+//        return RestResponseBo.ok();
+        return isSuccessful(result);
     }
 
     @RequestMapping(value = "/delete")
     @ResponseBody
-    public RestResponseBo delete(@RequestParam int cid, HttpServletRequest request) {
+    public RestResponseBo delete(@RequestParam(required = true) int cid, HttpServletRequest request) {
         String result = contentsService.deleteByCid(cid);
         logService.insertLog(LogActions.DEL_ARTICLE.getAction(), cid + "", request.getRemoteAddr(), this.getUid(request));
-        if (!WebConst.SUCCESS_RESULT.equals(result)) {
-            return RestResponseBo.fail(result);
-        }
-        return RestResponseBo.ok();
+//        if (!WebConst.SUCCESS_RESULT.equals(result)) {
+//            return RestResponseBo.fail(result);
+//        }
+//        return RestResponseBo.ok();
+        return isSuccessful(result);
     }
+//
+//    private RestResponseBo articleHelper(String result) {
+//        if (!WebConst.SUCCESS_RESULT.equals(result)) {
+//            return RestResponseBo.fail(result);
+//        } else return RestResponseBo.ok();
+//    }
 }

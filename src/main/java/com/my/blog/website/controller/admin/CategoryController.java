@@ -9,10 +9,10 @@ import com.my.blog.website.service.IMetaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
@@ -28,11 +28,13 @@ public class CategoryController extends BaseController {
     private IMetaService metasService;
 
     @GetMapping(value = "")
-    public String index(HttpServletRequest request) {
+    public String index(Model model) {
         List<MetaDto> categories = metasService.getMetaList(Types.CATEGORY.getType(), null, WebConst.MAX_POSTS);
         List<MetaDto> tags = metasService.getMetaList(Types.TAG.getType(), null, WebConst.MAX_POSTS);
-        request.setAttribute("categories", categories);
-        request.setAttribute("tags", tags);
+//        request.setAttribute("categories", categories);
+//        request.setAttribute("tags", tags);
+        model.addAttribute("categories", categories);
+        model.addAttribute("tags", tags);
         return "admin/category";
     }
 

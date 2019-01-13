@@ -15,6 +15,7 @@ import com.my.blog.website.utils.TaleUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -49,18 +50,18 @@ public class AttachController extends BaseController {
     /**
      * 附件页面
      *
-     * @param request
+     * @param model
      * @param page
      * @param limit
      * @return
      */
     @GetMapping(value = "")
-    public String index(HttpServletRequest request, @RequestParam(value = "page", defaultValue = "1") int page,
+    public String index(Model model, @RequestParam(value = "page", defaultValue = "1") int page,
                         @RequestParam(value = "limit", defaultValue = "12") int limit) {
         PageInfo<AttachVo> attachPaginator = attachService.getAttachs(page, limit);
-        request.setAttribute("attachs", attachPaginator);
-        request.setAttribute(Types.ATTACH_URL.getType(), Commons.site_option(Types.ATTACH_URL.getType(), Commons.site_url()));
-        request.setAttribute("max_file_size", WebConst.MAX_FILE_SIZE / 1024);
+        model.addAttribute("attachs", attachPaginator);
+        model.addAttribute(Types.ATTACH_URL.getType(), Commons.site_option(Types.ATTACH_URL.getType(), Commons.site_url()));
+        model.addAttribute("max_file_size", WebConst.MAX_FILE_SIZE / 1024);
         return "admin/attach";
     }
 

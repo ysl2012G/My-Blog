@@ -9,7 +9,6 @@ import com.my.blog.website.model.Vo.UserVo;
 import com.my.blog.website.service.ILogService;
 import com.my.blog.website.service.IUserService;
 import com.my.blog.website.utils.TaleUtils;
-import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,9 +18,12 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
+
+//import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 
 /**
  * 用户后台登录/登出
@@ -85,7 +87,7 @@ public class AuthController extends BaseController {
      * @param response
      */
     @RequestMapping("/logout")
-    public void logout(HttpSession session, HttpServletResponse response, HttpServletRequest request) {
+    public void logout(HttpSession session, HttpServletResponse response) {
         session.removeAttribute(WebConst.LOGIN_SESSION_KEY);
         Cookie cookie = new Cookie(WebConst.USER_IN_COOKIE, "");
         cookie.setValue(null);

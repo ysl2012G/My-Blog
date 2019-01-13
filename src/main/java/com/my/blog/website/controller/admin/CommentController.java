@@ -10,6 +10,7 @@ import com.my.blog.website.service.ICommentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -29,13 +30,14 @@ public class CommentController extends BaseController {
 
     @GetMapping(value = "")
     public String index(@RequestParam(value = "page", defaultValue = "1") int page,
-                        @RequestParam(value = "limit", defaultValue = "15") int limit, HttpServletRequest request) {
+                        @RequestParam(value = "limit", defaultValue = "15") int limit, HttpServletRequest request, Model model) {
         UserVo users = this.user(request);
         CommentVoExample commentVoExample = new CommentVoExample();
         commentVoExample.setOrderByClause("coid desc");
         commentVoExample.createCriteria().andAuthorIdNotEqualTo(users.getUid());
         PageInfo<CommentVo> commentsPaginator = commentsService.getCommentsWithPage(commentVoExample, page, limit);
-        request.setAttribute("comments", commentsPaginator);
+//        request.setAttribute("comments", commentsPaginator);
+        model.addAttribute("comments", commentsPaginator);
         return "admin/comment_list";
     }
 
@@ -64,7 +66,7 @@ public class CommentController extends BaseController {
 
     @PostMapping(value = "status")
     @ResponseBody
-    public RestResponseBo delete(@RequestParam Integer coid, @RequestParam String status) {
+    public RestResponseBo updateStatus(@RequestParam Integer coid, @RequestParam String status) {
         try {
             CommentVo comments = commentsService.getCommentById(coid);
             if (comments != null) {

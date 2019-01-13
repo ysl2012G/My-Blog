@@ -1,6 +1,5 @@
 package com.my.blog.website.controller.admin;
 
-import com.my.blog.website.service.ISiteService;
 import com.my.blog.website.constant.WebConst;
 import com.my.blog.website.controller.BaseController;
 import com.my.blog.website.dto.LogActions;
@@ -12,6 +11,7 @@ import com.my.blog.website.model.Vo.ContentVo;
 import com.my.blog.website.model.Vo.LogVo;
 import com.my.blog.website.model.Vo.UserVo;
 import com.my.blog.website.service.ILogService;
+import com.my.blog.website.service.ISiteService;
 import com.my.blog.website.service.IUserService;
 import com.my.blog.website.utils.GsonUtils;
 import com.my.blog.website.utils.TaleUtils;
@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -51,7 +52,7 @@ public class IndexController extends BaseController {
      * @return
      */
     @GetMapping(value = {"","/index"})
-    public String index(HttpServletRequest request){
+    public String index(Model model) {
         LOGGER.info("Enter admin index method");
         List<CommentVo> comments = siteService.recentComments(5);
         List<ContentVo> contents = siteService.recentContents(5);
@@ -59,10 +60,10 @@ public class IndexController extends BaseController {
         // 取最新的20条日志
         List<LogVo> logs = logService.getLogs(1, 5);
 
-        request.setAttribute("comments", comments);
-        request.setAttribute("articles", contents);
-        request.setAttribute("statistics", statistics);
-        request.setAttribute("logs", logs);
+        model.addAttribute("comments", comments);
+        model.addAttribute("articles", contents);
+        model.addAttribute("statistics", statistics);
+        model.addAttribute("logs", logs);
         LOGGER.info("Exit admin index method");
         return "admin/index";
     }
@@ -96,6 +97,8 @@ public class IndexController extends BaseController {
             original.setScreenName(screenName);
             original.setEmail(email);
             session.setAttribute(WebConst.LOGIN_SESSION_KEY,original);
+        } else {
+            return RestResponseBo.fail("姓名/邮箱 不能为空");
         }
         return RestResponseBo.ok();
     }
@@ -117,7 +120,9 @@ public class IndexController extends BaseController {
         if (password.length() < 6 || password.length() > 14) {
             return RestResponseBo.fail("请输入6-14位密码");
         }
-
+        if (TaleUtils.MD5encode(users.getUsername() + password).equals(TaleUtils.MD5encode(users.getUsername() + oldPassword))) {
+            return RestResponseBo.fail("密码不能相同");
+        }
         try {
             UserVo temp = new UserVo();
             temp.setUid(users.getUid());
