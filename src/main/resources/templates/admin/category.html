@@ -21,14 +21,15 @@
                                     <div class="btn-group m-b-10">
                                         <th:block th:if="${c.name == '默认分类'}">
                                             <button type="button"
-                                                    th:class="'btn btn-'+${adminCommons.rand_color()}+' waves-effect waves-light'">
+                                                    th:class="'btn btn-'+${T(com.my.blog.website.utils.AdminCommons).rand_color()}+' waves-effect waves-light'">
                                                 <th:block th:text="${c.name}"/>
                                                 <th:block th:text="' ('+${c.count}+')'"/>
                                             </button>
                                         </th:block>
                                         <th:block th:unless="${c.name == '默认分类'}">
+
                                             <button type="button"
-                                                    th:class="'btn btn-'+${adminCommons.rand_color()}+' dropdown-toggle waves-effect waves-light'"
+                                                    th:class="'btn btn-'+${T(com.my.blog.website.utils.AdminCommons).rand_color()}+' dropdown-toggle waves-effect waves-light'"
                                                     data-toggle="dropdown" aria-expanded="false">
                                                 <th:block th:text="${c.name}"/>
                                                 <th:block th:text="' ('+${c.count}+')'"/>
@@ -57,7 +58,7 @@
                                 <th:block th:each="c : ${tags}">
                                     <div class="btn-group m-b-10">
                                         <button type="button"
-                                                th:class="'btn btn-'+${adminCommons.rand_color()}+' dropdown-toggle waves-effect waves-light'"
+                                                th:class="'btn btn-'+${T(com.my.blog.website.utils.AdminCommons).rand_color()}+' dropdown-toggle waves-effect waves-light'"
                                                 data-toggle="dropdown" aria-expanded="false">
                                             <th:block th:text="${c.name}"/>
                                             <th:block th:text="' ('+${c.count}+')'"/>
@@ -76,6 +77,15 @@
                     <div class="col-md-12">
                         <div class="panel panel-default">
                             <div class="panel-body">
+                                <!--<form id="editForm" class="form-inline" role="form">-->
+                                <!--<input type="hidden" id="edit_mid"/>-->
+                                <!--<div class="form-group">-->
+                                <!--<input type="text" class="form-control" id="edit_cname" placeholder="请修改分类名称"/>-->
+                                <!--</div>-->
+                                <!--<button id="save-category-btn-edit" type="button"-->
+                                <!--class="btn btn-success waves-effect waves-light m-l-10">修改分类-->
+                                <!--</button>-->
+                                <!--</form>-->
                                 <form id="cform" class="form-inline" role="form">
                                     <input type="hidden" id="mid"/>
                                     <div class="form-group">
@@ -83,6 +93,9 @@
                                     </div>
                                     <button id="save-category-btn" type="button"
                                             class="btn btn-success waves-effect waves-light m-l-10">保存分类
+                                    </button>
+                                    <button id="reset-category-btn" type="button"
+                                            class="btn btn-info waves-effect waves-light m-l-10">新增分类
                                     </button>
                                 </form>
                             </div>
@@ -102,7 +115,7 @@
     $('#save-category-btn').click(function () {
         var cname = $('#cform #cname').val();
         var mid = $('#cform #mid').val();
-        if (cname && cname != '') {
+        if (cname && cname !== '') {
             tale.post({
                 url: '/admin/category/save',
                 data: {mid: mid, cname: cname},
@@ -122,8 +135,20 @@
     $('.edit-category').click(function () {
         var mid = $(this).attr('mid');
         var cname = $(this).attr('cname');
+        $('#cform #save-category-btn').text('修改分类');
+        $('#reset-category-btn').show();
         $('#cform #mid').val(mid);
         $('#cform #cname').val(cname);
+    });
+
+    $('#reset-category-btn').click(function () {
+        $('#cform #mid').val('');
+        $('#cform #cname').val('');
+        // setTimeout(function () {
+        $('#save-category-btn').text('保存分类');
+        $('#reset-category-btn').hide();
+        // }, 200);
+
     });
 
     $('.del-category').click(function () {
@@ -145,6 +170,21 @@
             }
         });
     });
+
+
+    $('#reset-category-btn').hide();
+    // function checkActivation() {
+    //     var mid = $(this).attr('mid');
+    //     if (mid !== '') {
+    //         $('#reset-category-btn').show();
+    //     } else {
+    //         $('#reset-category-btn').hide();
+    //     }
+    // }
+    //
+    // checkActivation();
+
+
     /*]]>*/
 </script>
 </body>

@@ -3,7 +3,7 @@
 <header th:replace="admin/header::headerFragment(${title},${active})"></header>
 <body class="fixed-left">
 <div id="wrapper">
-    <div th:replace="admin/header::header-body"></div>
+    <div th:replace=" admin/header::header-body"></div>
     <div class="content-page">
         <div class="content">
             <div class="container">
@@ -26,13 +26,15 @@
                             </thead>
                             <tbody>
                             <th:block th:each="comment : ${comments.list}">
+
                                 <tr th:attr="cid=${comment.coid}">
                                     <td>
-                                        <a th:href="@{${commons.site_url('/article/')}+${comment.cid}+'#comments'}"
-                                           target="_blank" th:utext="${commons.article(comment.content)}"></a>
+                                        <a th:href="@{${T(com.my.blog.website.utils.Commons).site_url('/article/')}+${comment.cid}+'#comments'}"
+                                           target="_blank"
+                                           th:utext="${T(com.my.blog.website.utils.Commons).article(comment.content)}"></a>
                                     </td>
                                     <td th:text="${comment.author}"></td>
-                                    <td th:text="${commons.fmtdate(comment.created, 'yyyy-MM-dd HH:mm:ss')}"></td>
+                                    <td th:text="${T(com.my.blog.website.utils.Commons).fmtdate(comment.created, 'yyyy-MM-dd HH:mm:ss')}"></td>
                                     <td th:text="${comment.mail}"></td>
                                     <td><a th:href="@{${comment.url}}" target="_blank" th:text="${comment.url}"></a>
                                     </td>

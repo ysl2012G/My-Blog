@@ -44,8 +44,9 @@
         };
     })();
     function getCommentCookie(name) {
-        var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
-        if (arr = document.cookie.match(reg))
+        var reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+        var arr = document.cookie.match(reg);
+        if (arr)
             return unescape(decodeURI(arr[2]));
         else
             return null;
