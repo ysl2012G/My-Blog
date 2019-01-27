@@ -226,6 +226,7 @@ public class IndexController extends BaseController {
         comments.setUrl(url);
         comments.setContent(text);
         comments.setMail(mail);
+        //TODO
         comments.setParent(coid);
         try {
             String result = commentService.insertComment(comments);
