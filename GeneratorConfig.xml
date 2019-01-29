@@ -18,35 +18,42 @@
             <property name="forceBigDecimals" value="false"/>
         </javaTypeResolver>
 
-        <javaModelGenerator targetPackage="com.my.blog.website.testmodel" targetProject="src/main/java">
+        <javaModelGenerator targetPackage="com.my.blog.website.model.Vo" targetProject="src/main/java">
             <property name="enableSubPackages" value="false"/>
             <property name="trimStrings" value="true"/>
         </javaModelGenerator>
 
-        <sqlMapGenerator targetPackage="testmapper" targetProject="src/main/resources">
+        <sqlMapGenerator targetPackage="mapper" targetProject="src/main/resources">
             <property name="enableSubPackages" value="false"/>
         </sqlMapGenerator>
 
-        <javaClientGenerator targetPackage="com.my.blog.website.testmapper" type="XMLMAPPER" targetProject="src/main/java">
+        <javaClientGenerator targetPackage="com.my.blog.website.dao" type="XMLMAPPER" targetProject="src/main/java">
             <property name="enableSubPackages" value="false"/>
         </javaClientGenerator>
 
-        <table schema="tale" tableName="t_attach" domainObjectName="AttachVo" enableCountByExample="true" enableDeleteByExample="true"
-               enableSelectByExample="true" enableUpdateByExample="true"/>
-        <table schema="tale" tableName="t_comments" domainObjectName="CommentVo" enableCountByExample="true" enableDeleteByExample="true"
-               enableSelectByExample="true" enableUpdateByExample="true"/>
-        <table schema="tale" tableName="t_contents" domainObjectName="ContentVo" enableCountByExample="true" enableDeleteByExample="true"
-               enableSelectByExample="true" enableUpdateByExample="true"/>
-        <table schema="tale" tableName="t_logs" domainObjectName="LogVo" enableCountByExample="true" enableDeleteByExample="true"
-               enableSelectByExample="true" enableUpdateByExample="true"/>
-        <table schema="tale" tableName="t_metas" domainObjectName="MetaVo" enableCountByExample="true" enableDeleteByExample="true"
-               enableSelectByExample="true" enableUpdateByExample="true"/>
-        <table schema="tale" tableName="t_options" domainObjectName="OptionVo" enableCountByExample="true" enableDeleteByExample="true"
-               enableSelectByExample="true" enableUpdateByExample="true"/>
-        <table schema="tale" tableName="t_relationships" domainObjectName="RelationshipVo" enableCountByExample="true" enableDeleteByExample="true"
-               enableSelectByExample="true" enableUpdateByExample="true"/>
-        <table schema="tale" tableName="t_users" domainObjectName="UserVo" enableCountByExample="true" enableDeleteByExample="true"
-               enableSelectByExample="true" enableUpdateByExample="true"/>
+        <!--<table schema="tale" tableName="t_attach" domainObjectName="AttachVo" enableCountByExample="true" enableDeleteByExample="true"-->
+        <!--enableSelectByExample="true" enableUpdateByExample="true">-->
+
+        <!--</table>-->
+        <!--<table schema="tale" tableName="t_comments" domainObjectName="CommentVo" enableCountByExample="true" enableDeleteByExample="true"-->
+        <!--enableSelectByExample="true" enableUpdateByExample="true"/>-->
+        <!--<table schema="tale" tableName="t_contents" domainObjectName="ContentVo" enableCountByExample="true" enableDeleteByExample="true"-->
+        <!--enableSelectByExample="true" enableUpdateByExample="true"/>-->
+        <!--<table schema="tale" tableName="t_logs" domainObjectName="LogVo" enableCountByExample="true" enableDeleteByExample="true"-->
+        <!--enableSelectByExample="true" enableUpdateByExample="true"/>-->
+        <!--<table schema="tale" tableName="t_metas" domainObjectName="MetaVo" enableCountByExample="true" enableDeleteByExample="true"-->
+        <!--enableSelectByExample="true" enableUpdateByExample="true"/>-->
+        <!--<table schema="tale" tableName="t_options" domainObjectName="OptionVo" enableCountByExample="true" enableDeleteByExample="true"-->
+        <!--enableSelectByExample="true" enableUpdateByExample="true"/>-->
+        <!--<table schema="tale" tableName="t_relationships" domainObjectName="RelationshipVo" enableCountByExample="true" enableDeleteByExample="true"-->
+        <!--enableSelectByExample="true" enableUpdateByExample="true"/>-->
+        <!--<table schema="tale" tableName="t_users" domainObjectName="UserVo" enableCountByExample="true" enableDeleteByExample="true"-->
+        <!--enableSelectByExample="true" enableUpdateByExample="true"/>-->
+        <table schema="tale" tableName="t_roles" domainObjectName="RoleVo" enableSelectByPrimaryKey="true"/>
+        <table schema="tale" tableName="t_users_roles" domainObjectName="UserRoleVo" enableSelectByExample="true"
+               enableCountByExample="true" enableDeleteByExample="true" enableInsert="true"
+               enableUpdateByExample="true"/>
+
 
     </context>
 </generatorConfiguration>
