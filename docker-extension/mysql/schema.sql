@@ -168,3 +168,57 @@ CREATE TABLE `t_users` (
 INSERT INTO `t_users` (`uid`, `username`, `password`, `email`, `home_url`, `screen_name`, `created`, `activated`, `logged`, `group_name`)
 VALUES
 	(1, 'admin', 'a66abb5684c45962d887564f08346e8d', '1034683568@qq.com', NULL, 'admin', 1490756162, 0, 0, 'visitor');
+
+# update to shiro passwordservice
+ALTER TABLE `t_users`
+  MODIFY `password` VARCHAR(88);
+# change value into shiro encrypted password;
+LOCK TABLES `t_users` WRITE;
+
+UPDATE `t_users`
+SET `password`='$shiro1$SHA-256$10$6iskYnntymLpFP7S8Ian0A==$KcE4QPIusNLCG7Tg+jRN3YuEJuvNTsN379zWO3cdH3I='
+WHERE `uid` = 1;
+UNLOCK TABLES;
+
+# create RBAC数据库
+DROP TABLE IF EXISTS `t_roles`;
+
+CREATE TABLE `t_roles`
+(
+  `rid`      int(10) unsigned NOT NULL AUTO_INCREMENT,
+  #   `roleID`   int(10) unsigned DEFAULT '20' COMMENT '角色ID',
+  `roleName` varchar(32) DEFAULT 'user' COMMENT '角色描述',
+  #   `permissionID` int(10) unsigned DEFAULT ''
+  #   'permissionName' varchar(32)      DEFAULT NULL COMMENT '权限描述'
+  PRIMARY KEY (`rid`),
+  UNIQUE KEY `name` (`roleName`)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8;
+
+LOCK TABLES `t_roles` WRITE;
+INSERT INTO `t_roles` (`rid`, `roleName`)
+VALUES (1, 'admin'),
+       (2, 'user');
+UNLOCK TABLES;
+
+# user roles relationship table;
+DROP TABLE IF EXISTS `t_users_roles`;
+CREATE TABLE `t_users_roles`
+(
+  `uid` int(10) unsigned NOT null COMMENT '用户id',
+  `rid` int(10) unsigned not null COMMENT '角色id',
+  PRIMARY KEY (`uid`, `rid`)
+) ENGINE = InnoDB,
+  DEFAULT CHARSET = utf8;
+
+LOCK TABLES `t_users_roles` WRITE;
+INSERT INTO `t_users_roles` (`uid`, `rid`)
+VALUES (1, 1),
+       (1, 2);
+UNLOCK TABLES;
+
+
+
+
+
+
