@@ -3,9 +3,9 @@ package com.my.blog.website.service.impl;
 import com.my.blog.website.dao.UserVoMapper;
 import com.my.blog.website.exception.TipException;
 import com.my.blog.website.model.Vo.UserVo;
+import com.my.blog.website.model.Vo.UserVoExample;
 import com.my.blog.website.service.IUserService;
 import com.my.blog.website.utils.TaleUtils;
-import com.my.blog.website.model.Vo.UserVoExample;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,6 +45,24 @@ public class UserServiceImpl implements IUserService {
             userVo = userDao.selectByPrimaryKey(uid);
         }
         return userVo;
+    }
+
+    @Override
+    public UserVo queryuserByUsername(String username) {
+        if (username.isEmpty()) {
+            throw new TipException("用户名不能为空");
+        }
+        UserVoExample example = new UserVoExample();
+        example.setDistinct(true);
+        UserVoExample.Criteria criteria = example.createCriteria();
+        criteria.andUsernameEqualTo(username);
+        long number = userDao.countByExample(example);
+        if (number < 1) {
+            throw new TipException("该用户不存在");
+        }
+        List<UserVo> users = userDao.selectByExample(example);
+        return users.get(0);
+
     }
 
     @Override

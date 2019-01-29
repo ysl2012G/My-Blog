@@ -136,6 +136,14 @@ public class ContentServiceImpl implements IContentService {
         }
     }
 
+    /**
+     * 根据meta(category,tags)查询
+     *
+     * @param mid   mid
+     * @param page  page
+     * @param limit limit
+     * @return
+     */
     @Override
     public PageInfo<ContentVo> getArticles(Integer mid, int page, int limit) {
         int total = metaDao.countWithSql(mid);
@@ -171,6 +179,8 @@ public class ContentServiceImpl implements IContentService {
     public String deleteByCid(Integer cid) {
         ContentVo contents = this.getContents(cid + "");
         if (null != contents) {
+            //ToDo: 评论表没能删除
+
             contentDao.deleteByPrimaryKey(cid);
             relationshipService.deleteById(cid, null);
             return WebConst.SUCCESS_RESULT;

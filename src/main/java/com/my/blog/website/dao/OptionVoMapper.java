@@ -2,13 +2,12 @@ package com.my.blog.website.dao;
 
 import com.my.blog.website.model.Vo.OptionVo;
 import com.my.blog.website.model.Vo.OptionVoExample;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
-import org.apache.ibatis.annotations.Param;
-import org.springframework.stereotype.Component;
-
-@Component
+@Mapper
 public interface OptionVoMapper {
     long countByExample(OptionVoExample example);
 

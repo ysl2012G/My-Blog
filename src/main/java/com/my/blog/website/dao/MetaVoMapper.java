@@ -3,14 +3,13 @@ package com.my.blog.website.dao;
 import com.my.blog.website.dto.MetaDto;
 import com.my.blog.website.model.Vo.MetaVo;
 import com.my.blog.website.model.Vo.MetaVoExample;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 import java.util.Map;
 
-import org.apache.ibatis.annotations.Param;
-import org.springframework.stereotype.Component;
-
-@Component
+@Mapper
 public interface MetaVoMapper {
     long countByExample(MetaVoExample example);
 

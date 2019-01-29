@@ -2,12 +2,12 @@ package com.my.blog.website.dao;
 
 import com.my.blog.website.model.Vo.RelationshipVoExample;
 import com.my.blog.website.model.Vo.RelationshipVoKey;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-import org.apache.ibatis.annotations.Param;
-import org.springframework.stereotype.Component;
 
-@Component
+@Mapper
 public interface RelationshipVoMapper {
     long countByExample(RelationshipVoExample example);
 

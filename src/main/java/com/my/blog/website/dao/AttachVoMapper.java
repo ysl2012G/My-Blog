@@ -2,11 +2,12 @@ package com.my.blog.website.dao;
 
 import com.my.blog.website.model.Vo.AttachVo;
 import com.my.blog.website.model.Vo.AttachVoExample;
-import java.util.List;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.springframework.stereotype.Component;
 
-@Component
+import java.util.List;
+
+@Mapper
 public interface AttachVoMapper {
     long countByExample(AttachVoExample example);
 
