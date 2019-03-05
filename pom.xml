@@ -116,6 +116,16 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-pool2</artifactId>
+            <version>2.6.0</version>
+        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>io.lettuce</groupId>-->
+        <!--<artifactId>lettuce-core</artifactId>-->
+        <!--<version>5.1.2.RELEASE</version>-->
+        <!--</dependency>-->
 
         <!--markdown处理-->
         <dependency>
@@ -168,12 +178,32 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
         <!--shiro引入-->
         <dependency>
             <groupId>org.apache.shiro</groupId>
             <artifactId>shiro-spring</artifactId>
             <version>1.4.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.esotericsoftware</groupId>
+            <artifactId>kryo</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.shiro</groupId>
+            <artifactId>shiro-web</artifactId>
+            <version>1.4.0</version>
+        </dependency>
+        <!--<dependency>-->
+        <!--<groupId>org.crazycake</groupId>-->
+        <!--<artifactId>shiro-redis</artifactId>-->
+        <!--<version>3.2.2</version>-->
+        <!--</dependency>-->
     </dependencies>
 
 

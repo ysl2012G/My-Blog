@@ -3,9 +3,7 @@ package com.my.blog.website.constant;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by BlueT on 2017/3/3.
@@ -23,6 +21,12 @@ public class WebConst {
      * aes加密加盐
      */
     public static String AES_SALT = "0123456789abcdef";
+
+
+    /**
+     * hash加密盐值
+     */
+    public static String HASH_SALT = "my-blog201901-03";
 
     /**
      * 最大获取文章条数
@@ -63,4 +67,25 @@ public class WebConst {
      * 同一篇文章在2个小时内无论点击多少次只算一次阅读
      */
     public static Integer HITS_LIMIT_TIME = 7200;
+
+    /**
+     * 点击数量保存实践(30天)
+     */
+
+    public static Long HITS_EXPIRE_TIME = 2592000L;
+
+    /**
+     * 评论间隔时间
+     */
+    public static Long COMMENT_FREQUENCY_EXPIRE_TIME = 60L;
+
+    /**
+     * 保存登陆失败的cache name
+     */
+    public static String ERROR_LOGIN_CACHE_NAME = "error_login_user";
+    /**
+     * 登录超过次数的锁定时间
+     */
+
+    public static long ERROR_LOGIN_LOCK_TIME = 600L;
 }
