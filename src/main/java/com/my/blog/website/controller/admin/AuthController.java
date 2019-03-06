@@ -1,24 +1,24 @@
 package com.my.blog.website.controller.admin;
 
-import com.my.blog.website.config.redis.RedisCacheManager;
 import com.my.blog.website.controller.BaseController;
 import com.my.blog.website.exception.TipException;
-import com.my.blog.website.service.ILogService;
+import com.my.blog.website.model.Bo.RestResponseBo;
+import com.my.blog.website.model.Vo.UserVo;
 import com.my.blog.website.service.IUserService;
+import com.my.blog.website.utils.TaleUtils;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.LockedAccountException;
 import org.apache.shiro.authc.UnknownAccountException;
 import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.authc.credential.PasswordService;
 import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -41,11 +41,9 @@ public class AuthController extends BaseController {
     @Resource
     private IUserService usersService;
 
-    @Resource
-    private ILogService logService;
 
     @Resource
-    private RedisCacheManager cacheManager;
+    private PasswordService passwordService;
 
 
     @GetMapping(value = "/login")
@@ -74,6 +72,8 @@ public class AuthController extends BaseController {
 //            return "redirect:index";
         } catch (Exception e) {
             if (e instanceof UnknownAccountException) {
+                model.addAttribute("msg", "用户不存在");
+            } else if (e instanceof AuthenticationException) {
                 model.addAttribute("msg", "用户名或者密码错误");
             } else if (e instanceof LockedAccountException) {
                 model.addAttribute("msg", "失败登录超过3次，请10分钟后再试");
@@ -184,5 +184,49 @@ public class AuthController extends BaseController {
         }
 
     }
+
+    /**
+     * 注册
+     */
+    @GetMapping(value = "/register")
+    public String register() {
+        Subject subject = SecurityUtils.getSubject();
+        if (subject.isAuthenticated() || subject.isRemembered()) {
+            return "redirect:index";
+        }
+        return "admin/register";
+    }
+
+    @PostMapping(value = "/register")
+    @ResponseBody
+    public RestResponseBo doRegister(@RequestParam String username, @RequestParam String email, @RequestParam String password) {
+        UserVo userVo = usersService.queryuserByUsername(username);
+        if (userVo != null) {
+            return RestResponseBo.fail("用户名已经存在");
+        }
+
+        if (!TaleUtils.isEmail(email)) {
+            return RestResponseBo.fail("邮箱格式错误！");
+        }
+
+        if (password.length() < 6 || password.length() > 14) {
+            return RestResponseBo.fail("请输入6-14位密码");
+        }
+
+
+        try {
+            UserVo temp = new UserVo();
+            temp.setUsername(username);
+            temp.setEmail(email);
+            temp.setPassword(passwordService.encryptPassword(password));
+            usersService.insertUser(temp);
+        } catch (Exception e) {
+            LOGGER.error("插入数据库失败", e);
+            return RestResponseBo.fail("注册失败，请重试");
+        }
+        return RestResponseBo.ok();
+
+    }
+
 
 }
