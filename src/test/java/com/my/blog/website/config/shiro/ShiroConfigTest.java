@@ -40,7 +40,7 @@ public class ShiroConfigTest {
     @Before
     @Transactional
     public void setup() {
-        passwords = "12345678";
+        passwords = "shuanglin";
 //        sha256Hash = passwordService.encryptPassword(passwords);
 //        String sha256Hash = "$shiro1$SHA-256$10$6iskYnntymLpFP7S8Ian0A==$KcE4QPIusNLCG7Tg+jRN3YuEJuvNTsN379zWO3cdH3I=";
         uid = 1;

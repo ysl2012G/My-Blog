@@ -1,6 +1,5 @@
 package com.my.blog.website.controller.admin;
 
-import com.my.blog.website.constant.WebConst;
 import com.my.blog.website.controller.BaseController;
 import com.my.blog.website.dto.LogActions;
 import com.my.blog.website.exception.TipException;
@@ -14,8 +13,9 @@ import com.my.blog.website.service.ILogService;
 import com.my.blog.website.service.ISiteService;
 import com.my.blog.website.service.IUserService;
 import com.my.blog.website.utils.GsonUtils;
-import com.my.blog.website.utils.TaleUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.credential.PasswordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -47,6 +47,8 @@ public class IndexController extends BaseController {
     @Resource
     private IUserService userService;
 
+    @Resource
+    private PasswordService passwordService;
     /**
      * 页面跳转
      * @return
@@ -93,10 +95,14 @@ public class IndexController extends BaseController {
             logService.insertLog(LogActions.UP_INFO.getAction(), GsonUtils.toJsonString(temp), request.getRemoteAddr(), this.getUid(request));
 
             //更新session中的数据
-            UserVo original= (UserVo)session.getAttribute(WebConst.LOGIN_SESSION_KEY);
+
+//            UserVo original = (UserVo) SecurityUtils.getSubject().getSession().getAttribute(WebConst.LOGIN_SESSION_KEY);
+//            UserVo original = (UserVo) SecurityUtils.getSubject().getPrincipal();
+//            UserVo original = (UserVo) session.getAttribute(WebConst.LOGIN_SESSION_KEY);
+            UserVo original = (UserVo) SecurityUtils.getSubject().getPrincipal();
             original.setScreenName(screenName);
             original.setEmail(email);
-            session.setAttribute(WebConst.LOGIN_SESSION_KEY,original);
+//            session.setAttribute(WebConst.LOGIN_SESSION_KEY,original);
         } else {
             return RestResponseBo.fail("姓名/邮箱 不能为空");
         }
@@ -114,27 +120,37 @@ public class IndexController extends BaseController {
             return RestResponseBo.fail("请确认信息输入完整");
         }
 
-        if (!users.getPassword().equals(TaleUtils.MD5encode(users.getUsername() + oldPassword))) {
+        //        if (!users.getPassword().equals(TaleUtils.MD5encode(users.getUsername() +
+        // oldPassword))) {
+        //            return RestResponseBo.fail("旧密码错误");
+        //        }
+        if (!passwordService.passwordsMatch(oldPassword, users.getPassword())) {
             return RestResponseBo.fail("旧密码错误");
         }
         if (password.length() < 6 || password.length() > 14) {
             return RestResponseBo.fail("请输入6-14位密码");
         }
-        if (TaleUtils.MD5encode(users.getUsername() + password).equals(TaleUtils.MD5encode(users.getUsername() + oldPassword))) {
+//        if (TaleUtils.MD5encode(users.getUsername() + password).equals(TaleUtils.MD5encode(users.getUsername() + oldPassword))) {
+//            return RestResponseBo.fail("密码不能相同");
+//        }
+
+        if (passwordService.passwordsMatch(password, users.getPassword())) {
             return RestResponseBo.fail("密码不能相同");
         }
         try {
             UserVo temp = new UserVo();
             temp.setUid(users.getUid());
-            String pwd = TaleUtils.MD5encode(users.getUsername() + password);
+//            String pwd = TaleUtils.MD5encode(users.getUsername() + password);
+            String pwd = passwordService.encryptPassword(password);
             temp.setPassword(pwd);
             userService.updateByUid(temp);
             logService.insertLog(LogActions.UP_PWD.getAction(), null, request.getRemoteAddr(), this.getUid(request));
 
             //更新session中的数据
-            UserVo original= (UserVo)session.getAttribute(WebConst.LOGIN_SESSION_KEY);
-            original.setPassword(pwd);
-            session.setAttribute(WebConst.LOGIN_SESSION_KEY,original);
+//            UserVo original= (UserVo)session.getAttribute(WebConst.LOGIN_SESSION_KEY);
+//            UserVo original = (UserVo) SecurityUtils.getSubject().getPrincipal();
+//            original.setPassword(pwd);
+//            session.setAttribute(WebConst.LOGIN_SESSION_KEY,original);
             return RestResponseBo.ok();
         } catch (Exception e){
             String msg = "密码修改失败";

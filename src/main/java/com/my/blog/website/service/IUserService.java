@@ -2,6 +2,8 @@ package com.my.blog.website.service;
 
 import com.my.blog.website.model.Vo.UserVo;
 
+import java.util.Set;
+
 /**
  * Created by BlueT on 2017/3/3.
  */
@@ -44,4 +46,14 @@ public interface IUserService {
      * @return
      */
     void updateByUid(UserVo userVo);
+
+    /**
+     * 根据主键获取角色值
+     *
+     * @param uid
+     * @return
+     */
+    Set<String> getRolesByID(Integer uid);
+
+
 }

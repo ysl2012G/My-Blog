@@ -24,7 +24,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.io.IOException;
 
 //import org.apache.catalina.servlet4preview.http.HttpServletRequest;
 
@@ -173,13 +172,17 @@ public class AuthController extends BaseController {
 //        cookie.setPath("/");
 //        response.addCookie(cookie);
         Subject subject = SecurityUtils.getSubject();
-        subject.logout();
         try {
-            response.sendRedirect("/admin/login");
-        } catch (IOException e) {
+
+
+            subject.logout();
+
+//            response.sendRedirect("/admin/login");
+        } catch (Exception e) {
             e.printStackTrace();
             LOGGER.error("注销失败", e);
         }
+
     }
 
 }

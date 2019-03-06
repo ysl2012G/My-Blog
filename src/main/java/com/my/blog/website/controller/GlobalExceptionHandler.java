@@ -1,6 +1,7 @@
 package com.my.blog.website.controller;
 
 import com.my.blog.website.exception.TipException;
+import org.apache.shiro.authz.UnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -20,6 +21,12 @@ public class GlobalExceptionHandler {
         return "comm/error_500";
     }
 
+    @ExceptionHandler(value = UnauthorizedException.class)
+    public String authorizedException(Exception e) {
+        LOGGER.error("find unauthorized exception", e);
+        return "comm/error_403";
+    }
+
 
     @ExceptionHandler(value = Exception.class)
     public String exception(Exception e){
@@ -27,4 +34,6 @@ public class GlobalExceptionHandler {
         e.printStackTrace();
         return "comm/error_404";
     }
+
+
 }

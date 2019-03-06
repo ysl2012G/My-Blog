@@ -9,6 +9,7 @@ import com.my.blog.website.service.IUserRoleService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -40,6 +41,7 @@ public class UserRoleServiceImpl implements IUserRoleService {
     }
 
     @Override
+    @Transactional
     public void insertUserRoleVo(UserRoleVoKey userRoleVoKey) {
         logger.debug("insert user-role values");
         userRoleVoMapper.insert(userRoleVoKey);

@@ -62,7 +62,7 @@
                             <span class="badge badge-primary"
                                   th:title="${article.commentsNum}+'条评论'" th:text="${article.commentsNum}"></span>
                                             <a target="_blank"
-                                               th:href="${T(com.my.blog.website.utils.Commons).site_url('/article/')}+${article.cid}"
+                                               th:href="${commons.site_url('/article/')}+${article.cid}"
                                                th:text="${article.title}"></a>
                                         </li>
                                     </ul>
@@ -90,11 +90,11 @@
                                             <th:block th:unless="${comment.url}!=null and ${comment.url}!=''" th:text="${comment.author}"/>
                                             于
                                             <th:block
-                                                    th:text="${T(com.my.blog.website.utils.Commons).fmtdate(comment.created,'MM月dd日HH:mm')}"/>
+                                                    th:text="${commons.fmtdate(comment.created,'MM月dd日HH:mm')}"/>
                                             ：<a
-                                                th:href="${T(com.my.blog.website.utils.Commons).site_url('/article/')}+${comment.cid}+'#comments'"
+                                                th:href="${commons.site_url('/article/')}+${comment.cid}+'#comments'"
                                                 target="_blank"
-                                                th:utext="${T(com.my.blog.website.utils.Commons).article(comment.content)}"></a>
+                                                th:utext="${commons.article(comment.content)}"></a>
                                         </li>
                                     </ul>
                                 </div>
@@ -108,7 +108,7 @@
                                 <div class="panel-body">
                                     <ul class="list-group" >
                                         <li class="list-group-item" th:each="log : ${logs}">
-                                            <span th:text="${T(com.my.blog.website.utils.Commons).fmtdate(log.created, 'yyyy-MM-dd HH:mm:ss')} +' => '+ ${log.action}"></span>
+                                            <span th:text="${commons.fmtdate(log.created, 'yyyy-MM-dd HH:mm:ss')} +' => '+ ${log.action}"></span>
                                         </li>
                                     </ul>
                                 </div>

@@ -13,6 +13,7 @@ public enum Types {
     CSRF_TOKEN("csrf_token"),
     COMMENTS_FREQUENCY("comments:frequency"),
     HITS_FREQUENCY("hits:frequency"),
+    HITS_COUNT("hits:count"),
 
     /**
      * 附件存放的URL，默认为网站地址，如集成第三方则为第三方CDN域名

@@ -1,9 +1,9 @@
 package com.my.blog.website.service;
 
 import com.github.pagehelper.PageInfo;
+import com.my.blog.website.model.Bo.CommentBo;
 import com.my.blog.website.model.Vo.CommentVo;
 import com.my.blog.website.model.Vo.CommentVoExample;
-import com.my.blog.website.model.Bo.CommentBo;
 
 /**
  * Created by BlueT on 2017/3/16.
@@ -50,6 +50,13 @@ public interface ICommentService {
      * @throws Exception
      */
     void delete(Integer coid, Integer cid);
+
+    /**
+     * 删除某一文章所有评论
+     *
+     * @param cid
+     */
+    void deleteByCid(Integer cid);
 
     /**
      * 更新评论状态

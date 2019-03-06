@@ -1,8 +1,8 @@
 package com.my.blog.website.controller;
 
+
 import com.github.pagehelper.PageInfo;
 import com.my.blog.website.constant.WebConst;
-import com.my.blog.website.dto.ErrorCode;
 import com.my.blog.website.dto.MetaDto;
 import com.my.blog.website.dto.Types;
 import com.my.blog.website.model.Bo.ArchiveBo;
@@ -20,6 +20,7 @@ import com.my.blog.website.utils.PatternKit;
 import com.my.blog.website.utils.TaleUtils;
 import com.vdurmont.emoji.EmojiParser;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.cache.Cache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -33,6 +34,9 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+//import com.sun.beans.util.Cache;
 
 /**
  * 首页
@@ -53,6 +57,7 @@ public class IndexController extends BaseController {
 
     @Resource
     private ISiteService siteService;
+
 
     /**
      * 首页
@@ -175,17 +180,24 @@ public class IndexController extends BaseController {
     public RestResponseBo comment(HttpServletRequest request, HttpServletResponse response,
                                   @RequestParam Integer cid, @RequestParam Integer coid,
                                   @RequestParam String author, @RequestParam String mail,
-                                  @RequestParam String url, @RequestParam String text, @RequestParam String _csrf_token) {
+                                  @RequestParam String url, @RequestParam String text) {
 
-        String ref = request.getHeader("Referer");
-        if (StringUtils.isBlank(ref) || StringUtils.isBlank(_csrf_token)) {
-            return RestResponseBo.fail(ErrorCode.BAD_REQUEST);
-        }
+//        String ref = request.getHeader("Referer");
+//        if (StringUtils.isBlank(ref) || StringUtils.isBlank(_csrf_token)) {
+//            return RestResponseBo.fail(ErrorCode.BAD_REQUEST);
+//        }
 
-        String token = cache.hget(Types.CSRF_TOKEN.getType(), _csrf_token);
-        if (StringUtils.isBlank(token)) {
-            return RestResponseBo.fail(ErrorCode.BAD_REQUEST);
-        }
+        //防止_csrf_token攻击
+//        String token = getCSRFToken();
+//        if (token == null) {
+//            LOGGER.debug("csrf token is redis is null");
+//            return RestResponseBo.fail(ErrorCode.BAD_REQUEST);
+//        }
+//
+//        if (!token.equals(_csrf_token)) {
+//            LOGGER.debug("csrf token in cache {} is not equal with the request getAttribute _csrf_token {}", token, _csrf_token);
+//            return RestResponseBo.fail(ErrorCode.BAD_REQUEST);
+//        }
 
         if (null == cid || StringUtils.isBlank(text)) {
             return RestResponseBo.fail("请输入完整后评论");
@@ -208,10 +220,12 @@ public class IndexController extends BaseController {
         }
 
         String val = IPKit.getIpAddrByRequest(request) + ":" + cid;
-        Integer count = cache.hget(Types.COMMENTS_FREQUENCY.getType(), val);
+        Cache<String, Integer> cache = getCache(Types.COMMENTS_FREQUENCY.getType(), WebConst.COMMENT_FREQUENCY_EXPIRE_TIME);
+        Integer count = cache.get(val);
         if (null != count && count > 0) {
             return RestResponseBo.fail("您发表评论太快了，请过会再试");
         }
+
 
         author = TaleUtils.cleanXSS(author);
         text = TaleUtils.cleanXSS(text);
@@ -236,7 +250,13 @@ public class IndexController extends BaseController {
                 cookie("tale_remember_url", URLEncoder.encode(url, "UTF-8"), 7 * 24 * 60 * 60, response);
             }
             // 设置对每个文章1分钟可以评论一次
-            cache.hset(Types.COMMENTS_FREQUENCY.getType(), val, 1, 60);
+
+//            cache.hset(Types.COMMENTS_FREQUENCY.getType(), val, 1, 60);
+
+//            Cache<String, Object> cache = getCache(Types.COMMENTS_FREQUENCY.getType(), WebConst.COMMENT_FREQUENCY_EXPIRE_TIME);
+//            getCache(Types.COMMENTS_FREQUENCY.getType(), tempExpire).put(val, 1);
+
+            cache.put(val, 1);
             if (!WebConst.SUCCESS_RESULT.equals(result)) {
                 return RestResponseBo.fail(result);
             }
@@ -369,19 +389,28 @@ public class IndexController extends BaseController {
      * @param chits current hits
      */
     private void updateArticleHit(Integer cid, Integer chits) {
-        Integer hits = cache.hget("article" + cid, "hits");
+
+        Cache<String, AtomicInteger> cache = getCache(Types.HITS_COUNT.getType(), WebConst.HITS_EXPIRE_TIME);
+        AtomicInteger hits = cache.get("article:" + cid);
         if (chits == null) {
             chits = 0;
         }
-        hits = null == hits ? 1 : hits + 1;
-        if (hits >= WebConst.HIT_EXCEED) {
+//        hits = (null == hits) ? 1 : hits + 1;
+        if (hits == null) {
+            hits = new AtomicInteger(1);
+        } else {
+            hits.incrementAndGet();
+        }
+
+        if (hits.get() >= WebConst.HIT_EXCEED) {
             ContentVo temp = new ContentVo();
             temp.setCid(cid);
-            temp.setHits(chits + hits);
+            temp.setHits(chits + hits.get());
             contentService.updateContentByCid(temp);
-            cache.hset("article" + cid, "hits", 1);
+//            cache.hset("article" + cid, "hits", 1);
+            cache.put("article" + cid, hits);
         } else {
-            cache.hset("article" + cid, "hits", hits);
+            cache.put("article" + cid, hits);
         }
     }
 
@@ -448,12 +477,16 @@ public class IndexController extends BaseController {
      * @return boolean value
      */
     private boolean checkHitsFrequency(HttpServletRequest request, String cid) {
+        long expire = WebConst.HITS_LIMIT_TIME;
         String val = IPKit.getIpAddrByRequest(request) + ":" + cid;
-        Integer count = cache.hget(Types.HITS_FREQUENCY.getType(), val);
+        Cache<String, Object> cache = getCache(Types.HITS_FREQUENCY.getType(), expire);
+        Integer count = (Integer) cache.get(val);
+
         if (null != count && count > 0) {
             return true;
         }
-        cache.hset(Types.HITS_FREQUENCY.getType(), val, 1, WebConst.HITS_LIMIT_TIME);
+//        cache.hset(Types.HITS_FREQUENCY.getType(), val, 1, WebConst.HITS_LIMIT_TIME);
+        cache.put(val, 1);
         return false;
     }
 

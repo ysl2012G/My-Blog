@@ -21,7 +21,7 @@
                                     <div class="btn-group m-b-10">
                                         <th:block th:if="${c.name == '默认分类'}">
                                             <button type="button"
-                                                    th:class="'btn btn-'+${T(com.my.blog.website.utils.AdminCommons).rand_color()}+' waves-effect waves-light'">
+                                                    th:class="'btn btn-'+${adminCommons.rand_color()}+' waves-effect waves-light'">
                                                 <th:block th:text="${c.name}"/>
                                                 <th:block th:text="' ('+${c.count}+')'"/>
                                             </button>
@@ -29,7 +29,7 @@
                                         <th:block th:unless="${c.name == '默认分类'}">
 
                                             <button type="button"
-                                                    th:class="'btn btn-'+${T(com.my.blog.website.utils.AdminCommons).rand_color()}+' dropdown-toggle waves-effect waves-light'"
+                                                    th:class="'btn btn-'+${adminCommons.rand_color()}+' dropdown-toggle waves-effect waves-light'"
                                                     data-toggle="dropdown" aria-expanded="false">
                                                 <th:block th:text="${c.name}"/>
                                                 <th:block th:text="' ('+${c.count}+')'"/>
@@ -58,7 +58,7 @@
                                 <th:block th:each="c : ${tags}">
                                     <div class="btn-group m-b-10">
                                         <button type="button"
-                                                th:class="'btn btn-'+${T(com.my.blog.website.utils.AdminCommons).rand_color()}+' dropdown-toggle waves-effect waves-light'"
+                                                th:class="'btn btn-'+${adminCommons.rand_color()}+' dropdown-toggle waves-effect waves-light'"
                                                 data-toggle="dropdown" aria-expanded="false">
                                             <th:block th:text="${c.name}"/>
                                             <th:block th:text="' ('+${c.count}+')'"/>

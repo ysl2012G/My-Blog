@@ -31,7 +31,7 @@
                                     </td>
                                     <td>
                                         <th:block
-                                                th:text="${T(com.my.blog.website.utils.Commons).fmtdate(post.created, 'yyyy-MM-dd HH:mm:ss')}"/>
+                                                th:text="${commons.fmtdate(post.created, 'yyyy-MM-dd HH:mm:ss')}"/>
                                     </td>
                                     <td><th:block th:text="${post.hits}"/></td>
                                     <td><th:block th:text="${post.categories}"/></td>
@@ -51,7 +51,7 @@
                                            class="btn btn-danger btn-sm waves-effect waves-light m-b-5"><i
                                                 class="fa fa-trash-o"></i> <span>删除</span></a>
                                         <a class="btn btn-warning btn-sm waves-effect waves-light m-b-5"
-                                           th:href="${T(com.my.blog.website.utils.Commons).permalink(post)}+'/preview'"
+                                           th:href="${commons.permalink(post)}+'/preview'"
                                            target="_blank"><i
                                                 class="fa fa-rocket"></i> <span>预览</span></a>
                                     </td>

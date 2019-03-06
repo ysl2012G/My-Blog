@@ -14,13 +14,13 @@
                             <div class="post-list-item-container">
                                 <div class="item-label">
                                     <div class="item-title">
-                                        <a th:href="${T(com.my.blog.website.utils.Commons).permalink(article.cid, article.slug)}"
+                                        <a th:href="${commons.permalink(article.cid, article.slug)}"
                                            th:text="${article.title}"></a>
                                     </div>
                                     <div class="item-meta clearfix">
                                         <div class="item-meta-date">发布于
                                             <th:block
-                                                    th:text="${T(com.my.blog.website.utils.Commons).fmtdate(article.created)}"/>
+                                                    th:text="${commons.fmtdate(article.created)}"/>
                                         </div>
                                     </div>
                                 </div>

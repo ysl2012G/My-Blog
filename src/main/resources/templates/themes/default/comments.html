@@ -7,9 +7,9 @@
         <div class="clearfix" id="comments">
             <div th:if="${article.allowComment}">
                 <span class="response">
-                    <th:block th:if="${session.login_user}">
-                    Hi，<a data-no-instant="" th:href="${session.login_user.homeUrl}"
-                          th:text="${session.login_user.username}"></a>
+                    <th:block th:if="${login_user}">
+                    Hi，<a data-no-instant="" th:href="${login_user.homeUrl}"
+                          th:text="${login_user.username}"></a>
                     如果你想 <a data-no-instant="" href="/logout" title="注销">注销</a> ?
                     </th:block>
                 </span>
@@ -17,7 +17,7 @@
                       role="form">
                     <input id="coid" name="coid" type="hidden"/>
                     <input id="cid" name="cid" th:value="${article.cid}" type="hidden"/>
-                    <input name="_csrf_token" th:value="${_csrf_token}" type="hidden"/>
+                    <!--<input name="_csrf_token" th:value="${_csrf_token}" type="hidden"/>-->
                     <input class="form-control input-control clearfix" id="author" maxlength="12" name="author"
                            placeholder="姓名 (*)"
                            type="text"
@@ -48,7 +48,7 @@
                                         <!--设置get请求的参数-->
                                         <img class="avatar"
                                              height="80"
-                                             th:src="@{${T(com.my.blog.website.utils.Commons).gravatar(comment.mail)}(s='80',r='G',d='')}"
+                                             th:src="@{${commons.gravatar(comment.mail)}(s='80',r='G',d='')}"
                                              th:title="${comment.author}" width="80"/>
                                         <span class="comment-author">
                                 <a href="##" rel="external nofollow"
@@ -57,11 +57,11 @@
                                     </div>
                                     <div class="comment-content">
                                         <span class="comment-author-at"></span>
-                                        <p th:utext="${T(com.my.blog.website.utils.Commons).article(comment.content)}"></p>
+                                        <p th:utext="${commons.article(comment.content)}"></p>
                                     </div>
                                     <div class="comment-meta">
                                         <time class="comment-time"
-                                              th:text="${T(com.my.blog.website.utils.Commons).fmtdate(comment.created)}"></time>
+                                              th:text="${commons.fmtdate(comment.created)}"></time>
                                         <span class="comment-reply">
                             </span>
                                     </div>

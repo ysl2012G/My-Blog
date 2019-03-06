@@ -1,6 +1,8 @@
 package com.my.blog.website.config;
 
 
+//import com.my.blog.website.config.interceptor.BaseInterceptor;
+
 import com.my.blog.website.utils.TaleUtils;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -18,10 +20,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
 //
 //
 //
-//    @Override
-//    public void addInterceptors(InterceptorRegistry registry) {
-////        registry.addInterceptor(baseInterceptor);
-//    }
+//@Override
+//public void addInterceptors(InterceptorRegistry registry) {
+//    registry.addInterceptor(baseInterceptor);
+//}
 
     /**
      * 添加静态资源文件，外部可以直接访问地址

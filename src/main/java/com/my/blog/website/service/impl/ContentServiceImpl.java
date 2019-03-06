@@ -9,6 +9,7 @@ import com.my.blog.website.dto.Types;
 import com.my.blog.website.exception.TipException;
 import com.my.blog.website.model.Vo.ContentVo;
 import com.my.blog.website.model.Vo.ContentVoExample;
+import com.my.blog.website.service.ICommentService;
 import com.my.blog.website.service.IContentService;
 import com.my.blog.website.service.IMetaService;
 import com.my.blog.website.service.IRelationshipService;
@@ -43,6 +44,9 @@ public class ContentServiceImpl implements IContentService {
 
     @Resource
     private IMetaService metasService;
+
+    @Resource
+    private ICommentService commentService;
 
     @Override
     @Transactional
@@ -179,10 +183,9 @@ public class ContentServiceImpl implements IContentService {
     public String deleteByCid(Integer cid) {
         ContentVo contents = this.getContents(cid + "");
         if (null != contents) {
-            //ToDo: 评论表没能删除
-
             contentDao.deleteByPrimaryKey(cid);
             relationshipService.deleteById(cid, null);
+            commentService.deleteByCid(cid);
             return WebConst.SUCCESS_RESULT;
         }
         return "数据为空";

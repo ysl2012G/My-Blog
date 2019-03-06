@@ -47,11 +47,11 @@
                     <li class="dropdown">
                         <a th:href="@{index.html}" class="dropdown-toggle profile" data-toggle="dropdown"
                            aria-expanded="true"><img
-                                th:src="${T(com.my.blog.website.utils.Commons).gravatar(session.login_user.email)}"
+                                th:src="${commons.gravatar(login_user.email)}"
                                 alt="user-img"
                                 class="img-circle"/> </a>
                         <ul class="dropdown-menu">
-                            <li><a th:href="@{${T(com.my.blog.website.utils.Commons).site_url()}}" target="_blank"><i
+                            <li><a th:href="@{${commons.site_url()}}" target="_blank"><i
                                     class="fa fa-eye"
                                     aria-hidden="true"></i>
                                 查看网站</a></li>

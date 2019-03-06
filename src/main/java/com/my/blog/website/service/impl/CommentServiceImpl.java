@@ -132,6 +132,21 @@ public class CommentServiceImpl implements ICommentService {
     }
 
     @Override
+    @Transactional
+    public void deleteByCid(Integer cid) {
+        if (cid == null) {
+            throw new TipException("文章cid为空");
+        }
+        CommentVoExample commentVoExample = new CommentVoExample();
+        CommentVoExample.Criteria criteria = commentVoExample.createCriteria();
+        criteria.andCidEqualTo(cid);
+        List<CommentVo> commentList = commentDao.selectByExample(commentVoExample);
+        for (CommentVo commentVo : commentList) {
+            commentDao.deleteByPrimaryKey(commentVo.getCoid());
+        }
+    }
+
+    @Override
     public CommentVo getCommentById(Integer coid) {
         if (null != coid) {
             return commentDao.selectByPrimaryKey(coid);

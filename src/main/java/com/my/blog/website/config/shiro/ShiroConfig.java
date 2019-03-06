@@ -93,7 +93,8 @@ public class ShiroConfig {
         securityManager.setSessionManager(webSessionManager());
         securityManager.setRememberMeManager(rememberMeManager());
 
-        //        SecurityUtils.setSecurityManager(securityManager);
+
+//                SecurityUtils.setSecurityManager(securityManager);
         return securityManager;
     }
 
