@@ -4,8 +4,6 @@ package com.my.blog.website.config.shiro; /*
 
 import com.my.blog.website.config.redis.RedisCacheManager;
 import com.my.blog.website.config.redis.RedisManager;
-import org.apache.shiro.authc.credential.PasswordMatcher;
-import org.apache.shiro.authc.credential.PasswordService;
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.session.SessionListener;
@@ -18,20 +16,23 @@ import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.filter.authc.FormAuthenticationFilter;
 import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.apache.shiro.web.servlet.AdviceFilter;
 import org.apache.shiro.web.servlet.SimpleCookie;
 import org.apache.shiro.web.session.mgt.DefaultWebSessionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
+import org.springframework.boot.web.embedded.tomcat.ConfigurableTomcatWebServerFactory;
+import org.springframework.boot.web.server.ErrorPage;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 
 import javax.servlet.Filter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 @Configuration
 public class ShiroConfig {
@@ -50,7 +51,7 @@ public class ShiroConfig {
         //自定义拦截器
         LinkedHashMap<String, Filter> filtersMap = new LinkedHashMap<>();
         //同一账号在线人数
-        filtersMap.put("kickout", kickoutSessionControlFilter());
+//        filtersMap.put("kickout", kickoutSessionControlFilter());
         //CSRF校验器
         filtersMap.put("request_attr", requestAttributeFilter());
         //注册
@@ -66,11 +67,13 @@ public class ShiroConfig {
         filterChainDefinitionMap.put("/admin/images/**", "anon");
         filterChainDefinitionMap.put("/admin/js/**", "anon");
         filterChainDefinitionMap.put("/admin/plugins/**", "anon");
-        filterChainDefinitionMap.put("/logout", "logout");
+        filterChainDefinitionMap.put("/admin/logout", "logout");
         // <!-- 过滤链定义，从上向下顺序执行，一般将 /**放在最为下边 -->:这是一个坑呢，一不小心代码就不好使了;
         // <!-- authc:所有url都必须认证通过才可以访问; anon:所有url都都可以匿名访问;user:记住我或者认证通过都可以访问-->
-        filterChainDefinitionMap.put("/admin/**", "kickout,user");
+        filterChainDefinitionMap.put("/admin/**", "user");
         filterChainDefinitionMap.put("/**", "request_attr");
+//        filterChainDefinitionMap.put("/admin/index", "anon");
+//        filterChainDefinitionMap.put("/admin/index", "user");
 
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
         logger.info("Shiro拦截器工厂类注入成功");
@@ -126,15 +129,15 @@ public class ShiroConfig {
      * @return
      */
     @Bean
-    public PasswordMatcher passwordMatcher() {
-        PasswordMatcher passwordMatcher = new PasswordMatcher();
+    public ShiroPasswordMatcher passwordMatcher() {
+        ShiroPasswordMatcher passwordMatcher = new ShiroPasswordMatcher();
         passwordMatcher.setPasswordService(passwordService());
 
         return passwordMatcher;
     }
 
-    @Bean(name = "userPasswordService")
-    public PasswordService passwordService() {
+    @Bean
+    public UserPasswordService passwordService() {
         return new UserPasswordService();
     }
 
@@ -206,7 +209,7 @@ public class ShiroConfig {
         CookieRememberMeManager cookieRememberMeManager = new CookieRememberMeManager();
         cookieRememberMeManager.setCookie(remembermeCookie());
         //编码从Test文件中生成
-        cookieRememberMeManager.setCipherKey(Base64.decode("TXktQmxvZy1ieS1zaHVhbmdsaW4yMDE5MDM="));
+        cookieRememberMeManager.setCipherKey(Base64.decode("YmJjNzQyYjktZjU0ZS00Yzg2LWE5Nzct"));
         return cookieRememberMeManager;
     }
 
@@ -283,27 +286,26 @@ public class ShiroConfig {
         return new ShiroSessionListener();
     }
 
+//
+//    /**
+//     * 同时登录设置
+//     *
+//     * @return
+//     */
+//    @Bean
+//    public KickoutSessionControlFilter kickoutSessionControlFilter() {
+//        KickoutSessionControlFilter controlFilter = new KickoutSessionControlFilter();
+//        controlFilter.setKickoutAfter(false);
+//        controlFilter.setMaxSession(1);
+//        controlFilter.setSessionManager(webSessionManager());
+//        controlFilter.setCacheManager(redisCacheManager());
+//        controlFilter.setKickoutUrl("/logout");
+//        return controlFilter;
+//    }
 
-    /**
-     * 同时登录设置
-     *
-     * @return
-     */
     @Bean
-    public KickoutSessionControlFilter kickoutSessionControlFilter() {
-        KickoutSessionControlFilter controlFilter = new KickoutSessionControlFilter();
-        controlFilter.setKickoutAfter(false);
-        controlFilter.setMaxSession(2);
-        controlFilter.setSessionManager(webSessionManager());
-        controlFilter.setCacheManager(redisCacheManager());
-        controlFilter.setKickoutUrl("/logout");
-        return controlFilter;
-    }
-
-    @Bean
-    public RequestAttributeFilter requestAttributeFilter() {
-        RequestAttributeFilter filter = new RequestAttributeFilter();
-        return filter;
+    public AdviceFilter requestAttributeFilter() {
+        return new RequestAttributeFilter();
     }
 
     /**
@@ -335,5 +337,36 @@ public class ShiroConfig {
         return authorizationAttributeSourceAdvisor;
     }
 
+    /**
+     * 解决： 无权限页面不跳转 shiroFilterFactoryBean.setUnauthorizedUrl("/unauthorized") 无效
+     * shiro的源代码ShiroFilterFactoryBean.Java定义的filter必须满足filter instanceof AuthorizationFilter，
+     * 只有perms，roles，ssl，rest，port才是属于AuthorizationFilter，而anon，authcBasic，auchc，user是AuthenticationFilter，
+     * 所以unauthorizedUrl设置后页面不跳转 Shiro注解模式下，登录失败与没有权限都是通过抛出异常。
+     * 并且默认并没有去处理或者捕获这些异常。在SpringMVC下需要配置捕获相应异常来通知用户信息
+     *
+     * @return
+     */
+    @Bean
+    public SimpleMappingExceptionResolver simpleMappingExceptionResolver() {
+        SimpleMappingExceptionResolver resolver = new SimpleMappingExceptionResolver();
+        Properties properties = new Properties();
+        properties.setProperty("org.apache.shiro.auth.UnauthorizedException", "/comm/error_403");
+        properties.setProperty("org.apache.shiro.auth.UnauthenticatedException", "/comm/error_403");
+        resolver.setExceptionMappings(properties);
+        return resolver;
+    }
 
+    /**
+     * 解决spring-boot Whitelabel Error Page
+     */
+    @Bean
+    public WebServerFactoryCustomizer<ConfigurableTomcatWebServerFactory> webServerFactoryWebServerFactoryCustomizer() {
+        return factory -> {
+            ErrorPage error403Page = new ErrorPage(HttpStatus.UNAUTHORIZED, "/comm/error_403.html");
+            ErrorPage error404Page = new ErrorPage(HttpStatus.NOT_FOUND, "/comm/error_404.html");
+            ErrorPage error500Page = new ErrorPage(HttpStatus.INTERNAL_SERVER_ERROR, "/comm/error_500.html");
+            factory.addErrorPages(error403Page, error404Page, error500Page);
+        };
+    }
 }
+

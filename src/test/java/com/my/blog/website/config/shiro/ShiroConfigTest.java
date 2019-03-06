@@ -18,6 +18,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.UUID;
+
 /*
  * create by shuanglin on 19-1-28
  */
@@ -76,6 +78,13 @@ public class ShiroConfigTest {
         String currentEncoder = "4AvVhmFLUs0KTA3Kprsdag==";
         logger.debug("previous encoder is {} with size {}.", currentEncoder, currentEncoder.length());
         logger.debug("decoder is {}", Base64.decodeToString(currentEncoder));
+
+
+        String key = UUID.randomUUID().toString().substring(0, 24);
+        logger.debug("current key is {}", key);
+        byte[] encoderBytes = Base64.encode(key.getBytes());
+        logger.debug("encoder is {} with length {}", new String(encoderBytes), new String(encoderBytes).length());
+        logger.debug("re-decoder is{}", Base64.decodeToString(encoderBytes));
 
 
     }

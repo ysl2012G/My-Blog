@@ -83,6 +83,7 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
             return true;
         }
 
+
         Session session = subject.getSession();
 //        String username = (String) subject.getPrincipal();
         UserVo userVo = (UserVo) subject.getPrincipal();
@@ -142,6 +143,8 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
             WebUtils.issueRedirect(request, response, kickoutUrl);
             return false;
         }
+
+
         return true;
 
 
@@ -155,6 +158,7 @@ public class KickoutSessionControlFilter extends AccessControlFilter {
         return staticUrl != null;
 
     }
+
 
     /**
      * setter function

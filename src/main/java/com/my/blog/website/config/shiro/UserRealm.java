@@ -46,11 +46,11 @@ public class UserRealm extends AuthorizingRealm {
             sqlUser = userService.queryuserByUsername(username);
         } catch (TipException e) {
             logger.error("数据库获取信息失败" + e.getMessage());
-            throw new AuthenticationException(e);
+            throw new UnknownAccountException(e);
 //            throw new AuthenticationException("身份认证出错！");
         }
         if (sqlUser == null) {
-            throw new AuthenticationException("数据库不存在当前用户");
+            throw new UnknownAccountException("数据库不存在当前用户");
         }
 //        String sqlPassword = sqlUser.getPassword();
         return new SimpleAuthenticationInfo(sqlUser, sqlUser.getPassword(), getName());

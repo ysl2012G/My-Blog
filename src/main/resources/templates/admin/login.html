@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org"
-      th:with="pic=${T(com.my.blog.website.utils.Commons).random(5, '.png')}"
+      th:with="pic=${commons.random(5, '.png')}"
       th:style="'background:url(/admin/images/bg/'+@{${pic}}+');no-repeat; background-size: cover;'">
 <head>
     <meta charset="utf-8"/>
@@ -58,8 +58,9 @@
             <div class="bg-overlay"></div>
             <h3 class="text-center m-t-10"> Login My Blog</h3>
         </div>
+
         <div class="panel-body">
-            <form class="form-horizontal m-t-20" method="post" id="loginForm" onsubmit="return checkForm()">
+            <form class="form-horizontal m-t-20" method="post" id="loginForm">
                 <div class="form-group">
                     <div class="col-xs-12">
                         <input class=" input-lg input-border" name="username" type="text" required=""
@@ -75,10 +76,13 @@
                 <div class="form-group">
                     <div class="col-xs-12">
                         <div class="checkbox checkbox-danger">
-                            <input id="checkbox-signup" name="remeber_me" type="checkbox"/>
+                            <input id="checkbox-signup" name="rememberMe" type="checkbox"/>
                             <label for="checkbox-signup">记住我</label>
                         </div>
                     </div>
+                </div>
+                <div>
+                    <h4 class="text-danger" th:if="${msg!=null}" th:text="${msg}"></h4>
                 </div>
                 <div class="form-group text-center m-t-40">
                     <div class="col-xs-12">
@@ -104,7 +108,9 @@
             data: $("#loginForm").serialize(),
             success: function (result) {
                 if (result && result.success) {
-                    window.location.href = '/admin/index';
+                    alert("登录成功");
+                    window.location.reload(true);
+                    // window.location.href = '/admin/index';
                 } else {
                     tale.alertError(result.msg || '登录失败');
                 }
