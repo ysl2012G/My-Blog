@@ -11,7 +11,6 @@ import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ui.Model;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 
 /**
@@ -26,6 +25,12 @@ public abstract class BaseController {
     protected RedisCacheManager cacheManager;
 
     private static final String CONTROLLER_CACHE_PREFIX = "controller";
+
+    private static final Integer DEFAULT_UID = 1;
+    private Integer currentUID = DEFAULT_UID;
+    //是否为游客标志
+    private static final boolean VISITOR_FLAG = false;
+    private boolean visitorFlag = VISITOR_FLAG;
 
 
     /**
@@ -73,16 +78,16 @@ public abstract class BaseController {
 
     /**
      * 获取请求绑定的登录对象
-     * @param request Http Servlet Request
+     *
      * @return login user
      */
-    public UserVo user(HttpServletRequest request) {
+    public UserVo user() {
 //        return TaleUtils.getLoginUser(request);
         return (UserVo) SecurityUtils.getSubject().getPrincipal();
     }
 
-    public Integer getUid(HttpServletRequest request){
-        return this.user(request).getUid();
+    public Integer getUid() {
+        return this.user().getUid();
     }
 
     protected String render_404() {
@@ -91,6 +96,36 @@ public abstract class BaseController {
 
     protected RestResponseBo isSuccessful(String result) {
         return WebConst.SUCCESS_RESULT.equals(result) ? RestResponseBo.ok() : RestResponseBo.fail(result);
+    }
+
+    /**
+     * setter function
+     */
+    public void setCurrentUID(Integer currentUID) {
+        this.currentUID = currentUID;
+    }
+
+    public void setVisitor(boolean isVisitor) {
+        this.visitorFlag = isVisitor;
+    }
+
+    /**
+     * getter function
+     */
+    public Integer getCurrentUID() {
+        return this.currentUID;
+    }
+
+    public boolean IsVisitor() {
+        return this.visitorFlag;
+    }
+
+    /**
+     * reset function
+     */
+    public void reset() {
+        setCurrentUID(DEFAULT_UID);
+        setVisitor(VISITOR_FLAG);
     }
 
 }

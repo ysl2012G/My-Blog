@@ -217,6 +217,13 @@ VALUES (1, 1),
        (1, 2);
 UNLOCK TABLES;
 
+# 更改meta 的parent值
+LOCK TABLES `t_metas` WRITE;
+
+UPDATE `t_metas`
+SET `parent`= 1;
+UNLOCK TABLES;
+
 
 
 

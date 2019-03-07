@@ -7,13 +7,14 @@ import com.my.blog.website.model.Vo.AttachVo;
  * Created by wangq on 2017/3/20.
  */
 public interface IAttachService {
+    void setCurrentUID(Integer uid);
     /**
      * 分页查询附件
      * @param page
      * @param limit
      * @return
      */
-    PageInfo<AttachVo> getAttachs(Integer page,Integer limit);
+    PageInfo<AttachVo> getAttachs(Integer page, Integer limit);
 
     /**
      * 保存附件

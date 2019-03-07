@@ -48,6 +48,11 @@ public class AttachController extends BaseController {
     private ILogService logService;
 
 
+    private void initUID(Integer uid) {
+        attachService.setCurrentUID(uid);
+        logService.setCurrentUID(uid);
+        this.setCurrentUID(uid);
+    }
     /**
      * 附件页面
      *
@@ -59,6 +64,7 @@ public class AttachController extends BaseController {
     @GetMapping(value = "")
     public String index(Model model, @RequestParam(value = "page", defaultValue = "1") int page,
                         @RequestParam(value = "limit", defaultValue = "12") int limit) {
+        this.initUID(this.getUid());
         PageInfo<AttachVo> attachPaginator = attachService.getAttachs(page, limit);
         model.addAttribute("attachs", attachPaginator);
         model.addAttribute(Types.ATTACH_URL.getType(), Commons.site_option(Types.ATTACH_URL.getType(), Commons.site_url()));
@@ -75,7 +81,8 @@ public class AttachController extends BaseController {
     @PostMapping(value = "upload")
     @ResponseBody
     public RestResponseBo upload(HttpServletRequest request, @RequestParam("file") MultipartFile[] multipartFiles) throws IOException {
-        UserVo users = this.user(request);
+        this.initUID(this.getUid());
+        UserVo users = this.user();
         Integer uid = users.getUid();
         List<String> errorFiles = new ArrayList<>();
         try {
@@ -104,6 +111,7 @@ public class AttachController extends BaseController {
     @RequestMapping(value = "delete")
     @ResponseBody
     public RestResponseBo delete(@RequestParam Integer id, HttpServletRequest request) {
+        this.initUID(this.getUid());
         try {
             AttachVo attach = attachService.selectById(id);
             if (null == attach) {
@@ -111,7 +119,7 @@ public class AttachController extends BaseController {
             }
             attachService.deleteById(id);
             new File(CLASSPATH + attach.getFkey()).delete();
-            logService.insertLog(LogActions.DEL_ARTICLE.getAction(), attach.getFkey(), request.getRemoteAddr(), this.getUid(request));
+            logService.insertLog(LogActions.DEL_ARTICLE.getAction(), attach.getFkey(), request.getRemoteAddr(), this.getUid());
         } catch (Exception e) {
             String msg = "附件删除失败";
             LOGGER.error(msg, e);

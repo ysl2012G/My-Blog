@@ -22,6 +22,19 @@ public class LogServiceImpl implements ILogService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LogServiceImpl.class);
 
+    private static final Integer DEFAULT_UID = 1;
+    private Integer currentUID = DEFAULT_UID;
+
+    @Override
+    public void setCurrentUID(Integer currentUID) {
+        this.currentUID = currentUID;
+    }
+
+    private Integer getCurrentUID() {
+        return this.currentUID;
+    }
+
+
     @Resource
     private LogVoMapper logDao;
 
@@ -51,6 +64,7 @@ public class LogServiceImpl implements ILogService {
             limit = 10;
         }
         LogVoExample logVoExample = new LogVoExample();
+        logVoExample.createCriteria().andAuthorIdEqualTo(getCurrentUID());
         logVoExample.setOrderByClause("id desc");
         PageHelper.startPage((page - 1) * limit, limit);
         List<LogVo> logVos = logDao.selectByExample(logVoExample);

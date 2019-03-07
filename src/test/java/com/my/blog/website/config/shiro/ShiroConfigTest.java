@@ -41,6 +41,9 @@ public class ShiroConfigTest {
     @Transactional
     public void setup() {
         passwords = "shuanglin";
+        //username="admin" password="shuanglin"
+        //username="shuanglin" password="Spring2012G"
+        //username="SpringBootTest" password="123456";
 //        sha256Hash = passwordService.encryptPassword(passwords);
 //        String sha256Hash = "$shiro1$SHA-256$10$6iskYnntymLpFP7S8Ian0A==$KcE4QPIusNLCG7Tg+jRN3YuEJuvNTsN379zWO3cdH3I=";
         uid = 1;

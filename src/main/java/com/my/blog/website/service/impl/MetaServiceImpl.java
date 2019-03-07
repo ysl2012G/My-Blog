@@ -39,10 +39,25 @@ public class MetaServiceImpl implements IMetaService {
     @Resource
     private IContentService contentService;
 
+    private static final Integer DEFAULT_UID = 1;
+    private Integer currentUID = DEFAULT_UID;
+
+    @Override
+    public void setCurrentUID(Integer uid) {
+        LOGGER.debug("MetaService: current uid is reset to {}", uid);
+        this.currentUID = uid;
+    }
+
+    private Integer getCurrentUID() {
+        return this.currentUID;
+    }
+
+
     @Override
     public MetaDto getMeta(String type, String name) {
         if (StringUtils.isNotBlank(type) && StringUtils.isNotBlank(name)) {
-            return metaDao.selectDtoByNameAndType(name, type);
+//            return metaDao.selectDtoByNameAndType(name, type);
+            return metaDao.selectDtoByNameAndTypeAndUID(getCurrentUID(), name, type);
         }
         return null;
     }
@@ -57,7 +72,7 @@ public class MetaServiceImpl implements IMetaService {
         if (StringUtils.isNotBlank(types)) {
             MetaVoExample metaVoExample = new MetaVoExample();
             metaVoExample.setOrderByClause("sort desc, mid desc");
-            metaVoExample.createCriteria().andTypeEqualTo(types);
+            metaVoExample.createCriteria().andTypeEqualTo(types).andParentEqualTo(getCurrentUID());
             return metaDao.selectByExample(metaVoExample);
         }
         return null;
@@ -76,7 +91,8 @@ public class MetaServiceImpl implements IMetaService {
             paraMap.put("type", type);
             paraMap.put("order", orderby);
             paraMap.put("limit", limit);
-            return metaDao.selectFromSql(paraMap);
+            paraMap.put("uid", getCurrentUID());
+            return metaDao.selectFromSqlWithUID(paraMap);
         }
         return null;
     }
@@ -117,7 +133,7 @@ public class MetaServiceImpl implements IMetaService {
     public void saveMeta(String type, String name, Integer mid) {
         if (StringUtils.isNotBlank(type) && StringUtils.isNotBlank(name)) {
             MetaVoExample metaVoExample = new MetaVoExample();
-            metaVoExample.createCriteria().andTypeEqualTo(type).andNameEqualTo(name);
+            metaVoExample.createCriteria().andTypeEqualTo(type).andNameEqualTo(name).andParentEqualTo(getCurrentUID());
             List<MetaVo> metaVos = metaDao.selectByExample(metaVoExample);
             MetaVo metas;
             if (metaVos.size() != 0) {
@@ -128,11 +144,14 @@ public class MetaServiceImpl implements IMetaService {
                 if (null != mid) {
                     MetaVo original = metaDao.selectByPrimaryKey(mid);
                     metas.setMid(mid);
+                    metas.setParent(getCurrentUID());
                     metaDao.updateByPrimaryKeySelective(metas);
 //                    更新原有文章的categories
-                    contentService.updateCategory(original.getName(), name);
+//                    contentService.updateCategory(original.getName(), name);
+                    contentService.updateCategoryWithUID(getCurrentUID(), original.getName(), name);
                 } else {
                     metas.setType(type);
+                    metas.setParent(getCurrentUID());
                     metaDao.insertSelective(metas);
                 }
             }
@@ -155,7 +174,7 @@ public class MetaServiceImpl implements IMetaService {
 
     private void saveOrUpdate(Integer cid, String name, String type) {
         MetaVoExample metaVoExample = new MetaVoExample();
-        metaVoExample.createCriteria().andTypeEqualTo(type).andNameEqualTo(name);
+        metaVoExample.createCriteria().andTypeEqualTo(type).andNameEqualTo(name).andParentEqualTo(getCurrentUID());
         List<MetaVo> metaVos = metaDao.selectByExample(metaVoExample);
 
         int mid;
@@ -170,6 +189,7 @@ public class MetaServiceImpl implements IMetaService {
             metas.setSlug(name);
             metas.setName(name);
             metas.setType(type);
+            metas.setParent(getCurrentUID());
             metaDao.insertSelective(metas);
             mid = metas.getMid();
         }

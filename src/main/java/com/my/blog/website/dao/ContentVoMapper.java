@@ -40,5 +40,9 @@ public interface ContentVoMapper {
 
     List<ArchiveBo> findReturnArchiveBo();
 
+    List<ArchiveBo> findReturnArchiveBoWithUID(Integer uid);
+
     List<ContentVo> findByCatalog(Integer mid);
+
+    List<ContentVo> findByCatalogAndUID(@Param("uid") Integer uid, @Param("mid") Integer mid);
 }

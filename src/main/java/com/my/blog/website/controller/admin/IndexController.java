@@ -14,7 +14,6 @@ import com.my.blog.website.service.ISiteService;
 import com.my.blog.website.service.IUserService;
 import com.my.blog.website.utils.GsonUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.credential.PasswordService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,12 +48,20 @@ public class IndexController extends BaseController {
 
     @Resource
     private PasswordService passwordService;
+
+    private void initUID(Integer uid) {
+        siteService.setCurentUID(uid);
+        logService.setCurrentUID(uid);
+        this.setCurrentUID(uid);
+    }
     /**
      * 页面跳转
      * @return
      */
     @GetMapping(value = {"","/index"})
     public String index(Model model) {
+        initUID(this.getUid());
+
         LOGGER.info("Enter admin index method");
         List<CommentVo> comments = siteService.recentComments(5);
         List<ContentVo> contents = siteService.recentContents(5);
@@ -75,6 +82,7 @@ public class IndexController extends BaseController {
      */
     @GetMapping(value = "profile")
     public String profile() {
+        initUID(this.getUid());
         return "admin/profile";
     }
 
@@ -85,23 +93,24 @@ public class IndexController extends BaseController {
     @PostMapping(value = "/profile")
     @ResponseBody
     public RestResponseBo saveProfile(@RequestParam String screenName, @RequestParam String email, HttpServletRequest request, HttpSession session) {
-        UserVo users = this.user(request);
+//        initUID(this.getUid());
+        UserVo users = this.user();
         if (StringUtils.isNotBlank(screenName) && StringUtils.isNotBlank(email)) {
             UserVo temp = new UserVo();
             temp.setUid(users.getUid());
             temp.setScreenName(screenName);
             temp.setEmail(email);
             userService.updateByUid(temp);
-            logService.insertLog(LogActions.UP_INFO.getAction(), GsonUtils.toJsonString(temp), request.getRemoteAddr(), this.getUid(request));
+            logService.insertLog(LogActions.UP_INFO.getAction(), GsonUtils.toJsonString(temp), request.getRemoteAddr(), this.getUid());
 
             //更新session中的数据
 
 //            UserVo original = (UserVo) SecurityUtils.getSubject().getSession().getAttribute(WebConst.LOGIN_SESSION_KEY);
 //            UserVo original = (UserVo) SecurityUtils.getSubject().getPrincipal();
 //            UserVo original = (UserVo) session.getAttribute(WebConst.LOGIN_SESSION_KEY);
-            UserVo original = (UserVo) SecurityUtils.getSubject().getPrincipal();
-            original.setScreenName(screenName);
-            original.setEmail(email);
+//            UserVo original = (UserVo) SecurityUtils.getSubject().getPrincipal();
+//            original.setScreenName(screenName);
+//            original.setEmail(email);
 //            session.setAttribute(WebConst.LOGIN_SESSION_KEY,original);
         } else {
             return RestResponseBo.fail("姓名/邮箱 不能为空");
@@ -115,7 +124,7 @@ public class IndexController extends BaseController {
     @PostMapping(value = "/password")
     @ResponseBody
     public RestResponseBo upPwd(@RequestParam String oldPassword, @RequestParam String password, HttpServletRequest request,HttpSession session) {
-        UserVo users = this.user(request);
+        UserVo users = this.user();
         if (StringUtils.isBlank(oldPassword) || StringUtils.isBlank(password)) {
             return RestResponseBo.fail("请确认信息输入完整");
         }
@@ -144,7 +153,7 @@ public class IndexController extends BaseController {
             String pwd = passwordService.encryptPassword(password);
             temp.setPassword(pwd);
             userService.updateByUid(temp);
-            logService.insertLog(LogActions.UP_PWD.getAction(), null, request.getRemoteAddr(), this.getUid(request));
+            logService.insertLog(LogActions.UP_PWD.getAction(), null, request.getRemoteAddr(), this.getUid());
 
             //更新session中的数据
 //            UserVo original= (UserVo)session.getAttribute(WebConst.LOGIN_SESSION_KEY);

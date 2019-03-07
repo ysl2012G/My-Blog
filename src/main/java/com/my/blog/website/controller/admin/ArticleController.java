@@ -45,12 +45,20 @@ public class ArticleController extends BaseController {
     @Resource
     private ILogService logService;
 
+    private void initUID(Integer uid) {
+        contentsService.SetCurrentUID(uid);
+        metasService.setCurrentUID(uid);
+        this.setCurrentUID(uid);
+    }
+
     @GetMapping(value = "")
     public String index(Model model, @RequestParam(value = "page", defaultValue = "1") int page,
                         @RequestParam(value = "limit", defaultValue = "15") int limit) {
+        initUID(this.getUid());
         ContentVoExample contentVoExample = new ContentVoExample();
         contentVoExample.setOrderByClause("created desc");
-        contentVoExample.createCriteria().andTypeEqualTo(Types.ARTICLE.getType());
+        contentVoExample.createCriteria().andTypeEqualTo(Types.ARTICLE.getType()).andAuthorIdEqualTo(this.getUid());
+
         PageInfo<ContentVo> contentsPaginator = contentsService.getArticlesWithpage(contentVoExample, page, limit);
         model.addAttribute("articles", contentsPaginator);
         return "admin/article_list";
@@ -58,6 +66,7 @@ public class ArticleController extends BaseController {
 
     @GetMapping(value = "/publish")
     public String newArticle(HttpServletRequest request) {
+        initUID(this.getUid());
         List<MetaVo> categories = metasService.getMetas(Types.CATEGORY.getType());
         request.setAttribute("categories", categories);
         return "admin/article_edit";
@@ -65,6 +74,7 @@ public class ArticleController extends BaseController {
 
     @GetMapping(value = "/{cid}")
     public String editArticle(Model model, @PathVariable(required = true) String cid) {
+        initUID(this.getUid());
         ContentVo contents = contentsService.getContents(cid);
         model.addAttribute("contents", contents);
         List<MetaVo> categories = metasService.getMetas(Types.CATEGORY.getType());
@@ -75,8 +85,9 @@ public class ArticleController extends BaseController {
 
     @PostMapping(value = "/publish")
     @ResponseBody
-    public RestResponseBo publishArticle(@ModelAttribute(value = "contents") ContentVo contents, HttpServletRequest request) {
-        UserVo users = this.user(request);
+    public RestResponseBo publishArticle(@ModelAttribute(value = "contents") ContentVo contents) {
+        UserVo users = this.user();
+        this.initUID(this.getUid());
         contents.setAuthorId(users.getUid());
         contents.setType(Types.ARTICLE.getType());
         if (StringUtils.isBlank(contents.getCategories())) {
@@ -93,7 +104,8 @@ public class ArticleController extends BaseController {
     @PostMapping(value = "/modify")
     @ResponseBody
     public RestResponseBo modifyArticle(@ModelAttribute(value = "contents") ContentVo contents, HttpServletRequest request) {
-        UserVo users = this.user(request);
+        UserVo users = this.user();
+        this.initUID(this.getUid());
         contents.setAuthorId(users.getUid());
         contents.setType(Types.ARTICLE.getType());
         String result = contentsService.updateArticle(contents);
@@ -107,8 +119,9 @@ public class ArticleController extends BaseController {
     @RequestMapping(value = "/delete")
     @ResponseBody
     public RestResponseBo delete(@RequestParam(required = true) int cid, HttpServletRequest request) {
+        this.initUID(this.getUid());
         String result = contentsService.deleteByCid(cid);
-        logService.insertLog(LogActions.DEL_ARTICLE.getAction(), cid + "", request.getRemoteAddr(), this.getUid(request));
+        logService.insertLog(LogActions.DEL_ARTICLE.getAction(), cid + "", request.getRemoteAddr(), this.getUid());
 //        if (!WebConst.SUCCESS_RESULT.equals(result)) {
 //            return RestResponseBo.fail(result);
 //        }

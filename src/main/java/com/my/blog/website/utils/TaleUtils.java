@@ -251,6 +251,7 @@ public class TaleUtils {
      * @param session
      * @param response
      */
+    @Deprecated
     public static void logout(HttpSession session, HttpServletResponse response) {
         session.removeAttribute(WebConst.LOGIN_SESSION_KEY);
         Cookie cookie = new Cookie(WebConst.USER_IN_COOKIE, "");

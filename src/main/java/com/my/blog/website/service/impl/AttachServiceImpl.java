@@ -3,10 +3,10 @@ package com.my.blog.website.service.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.my.blog.website.dao.AttachVoMapper;
-import com.my.blog.website.utils.DateKit;
 import com.my.blog.website.model.Vo.AttachVo;
 import com.my.blog.website.model.Vo.AttachVoExample;
 import com.my.blog.website.service.IAttachService;
+import com.my.blog.website.utils.DateKit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -25,10 +25,24 @@ public class AttachServiceImpl implements IAttachService {
     @Resource
     private AttachVoMapper attachDao;
 
+    private static final Integer DEFAULT_UID = 1;
+    private Integer currentUID = DEFAULT_UID;
+
+    @Override
+    public void setCurrentUID(Integer currentUID) {
+        this.currentUID = currentUID;
+    }
+
+    private Integer getCurrentUID() {
+        return this.currentUID;
+    }
+
+
     @Override
     public PageInfo<AttachVo> getAttachs(Integer page, Integer limit) {
         PageHelper.startPage(page, limit);
         AttachVoExample attachVoExample = new AttachVoExample();
+        attachVoExample.createCriteria().andAuthorIdEqualTo(getCurrentUID());
         attachVoExample.setOrderByClause("id desc");
         List<AttachVo> attachVos = attachDao.selectByExample(attachVoExample);
         return new PageInfo<>(attachVos);

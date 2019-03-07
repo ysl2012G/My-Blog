@@ -35,7 +35,13 @@ public interface MetaVoMapper {
 
     List<MetaDto> selectFromSql(Map<String,Object> paraMap);
 
+    List<MetaDto> selectFromSqlWithUID(Map<String, Object> paraMap);
+
     MetaDto selectDtoByNameAndType(@Param("name") String name,@Param("type") String type);
 
+    MetaDto selectDtoByNameAndTypeAndUID(@Param("uid") Integer uid, @Param("name") String name, @Param("type") String type);
+
     Integer countWithSql(Integer mid);
+
+    Integer countWithSqlAndUID(@Param("uid") Integer uid, @Param("mid") Integer mid);
 }

@@ -16,6 +16,7 @@ import java.util.List;
  */
 public interface ISiteService {
 
+    void setCurentUID(Integer uid);
 
     /**
      * 最新收到的评论

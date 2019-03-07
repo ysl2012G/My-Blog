@@ -35,11 +35,18 @@ public class PageController extends BaseController {
     @Resource
     private ILogService logService;
 
+    private void initUID(Integer uid) {
+        contentsService.SetCurrentUID(uid);
+        logService.setCurrentUID(uid);
+        this.setCurrentUID(uid);
+    }
+
     @GetMapping(value = "")
     public String index(Model model) {
+        this.initUID(this.getUid());
         ContentVoExample contentVoExample = new ContentVoExample();
         contentVoExample.setOrderByClause("created desc");
-        contentVoExample.createCriteria().andTypeEqualTo(Types.PAGE.getType());
+        contentVoExample.createCriteria().andTypeEqualTo(Types.PAGE.getType()).andAuthorIdEqualTo(getCurrentUID());
         PageInfo<ContentVo> contentsPaginator = contentsService.getArticlesWithpage(contentVoExample, 1, WebConst.MAX_POSTS);
 //        request.setAttribute("articles", contentsPaginator);
         model.addAttribute("articles", contentsPaginator);
@@ -89,7 +96,9 @@ public class PageController extends BaseController {
     @PostMapping(value = "publish")
     @ResponseBody
     public RestResponseBo publishPage(HttpServletRequest request, @ModelAttribute(value = "contents") ContentVo contents) {
-        UserVo users = this.user(request);
+
+        UserVo users = this.user();
+        this.initUID(this.getUid());
         contents.setType(Types.PAGE.getType());
         contents.setAuthorId(users.getUid());
         String result = contentsService.publish(contents);
@@ -99,7 +108,8 @@ public class PageController extends BaseController {
     @PostMapping(value = "modify")
     @ResponseBody
     public RestResponseBo modifyPage(@ModelAttribute(value = "contents") ContentVo contents, HttpServletRequest request) {
-        UserVo users = this.user(request);
+        UserVo users = this.user();
+        this.initUID(this.getUid());
         contents.setAuthorId(users.getUid());
         contents.setType(Types.PAGE.getType());
         String result = contentsService.updateArticle(contents);
@@ -138,8 +148,9 @@ public class PageController extends BaseController {
     @RequestMapping(value = "delete")
     @ResponseBody
     public RestResponseBo delete(@RequestParam int cid, HttpServletRequest request) {
+        this.initUID(this.getUid());
         String result = contentsService.deleteByCid(cid);
-        logService.insertLog(LogActions.DEL_ARTICLE.getAction(), cid + "", request.getRemoteAddr(), this.getUid(request));
+        logService.insertLog(LogActions.DEL_ARTICLE.getAction(), cid + "", request.getRemoteAddr(), this.getUid());
         return isSuccessful(result);
         }
 

@@ -31,10 +31,11 @@ public class CommentController extends BaseController {
     @GetMapping(value = "")
     public String index(@RequestParam(value = "page", defaultValue = "1") int page,
                         @RequestParam(value = "limit", defaultValue = "15") int limit, HttpServletRequest request, Model model) {
-        UserVo users = this.user(request);
+        UserVo users = this.user();
         CommentVoExample commentVoExample = new CommentVoExample();
         commentVoExample.setOrderByClause("coid desc");
-        commentVoExample.createCriteria().andAuthorIdNotEqualTo(users.getUid());
+//        commentVoExample.createCriteria().andAuthorIdNotEqualTo(users.getUid());
+        commentVoExample.createCriteria().andOwnerIdEqualTo(users.getUid());
         PageInfo<CommentVo> commentsPaginator = commentsService.getCommentsWithPage(commentVoExample, page, limit);
 //        request.setAttribute("comments", commentsPaginator);
         model.addAttribute("comments", commentsPaginator);

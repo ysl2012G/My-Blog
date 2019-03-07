@@ -1,24 +1,24 @@
 package com.my.blog.website.service.impl;
 
 import com.github.pagehelper.PageHelper;
+import com.my.blog.website.constant.WebConst;
+import com.my.blog.website.controller.admin.AttachController;
 import com.my.blog.website.dao.AttachVoMapper;
+import com.my.blog.website.dao.CommentVoMapper;
+import com.my.blog.website.dao.ContentVoMapper;
+import com.my.blog.website.dao.MetaVoMapper;
 import com.my.blog.website.dto.MetaDto;
+import com.my.blog.website.dto.Types;
 import com.my.blog.website.exception.TipException;
 import com.my.blog.website.model.Bo.ArchiveBo;
+import com.my.blog.website.model.Bo.BackResponseBo;
+import com.my.blog.website.model.Bo.StatisticsBo;
 import com.my.blog.website.model.Vo.*;
 import com.my.blog.website.service.ISiteService;
 import com.my.blog.website.utils.DateKit;
 import com.my.blog.website.utils.TaleUtils;
-import com.my.blog.website.utils.backup.Backup;
-import com.my.blog.website.constant.WebConst;
-import com.my.blog.website.controller.admin.AttachController;
-import com.my.blog.website.dao.CommentVoMapper;
-import com.my.blog.website.dao.ContentVoMapper;
-import com.my.blog.website.dao.MetaVoMapper;
-import com.my.blog.website.dto.Types;
-import com.my.blog.website.model.Bo.BackResponseBo;
-import com.my.blog.website.model.Bo.StatisticsBo;
 import com.my.blog.website.utils.ZipUtils;
+import com.my.blog.website.utils.backup.Backup;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +51,19 @@ public class SiteServiceImpl implements ISiteService {
     @Resource
     private MetaVoMapper metaDao;
 
+    private static final Integer DEFAULT_UID = 1;
+    private Integer currentUID = DEFAULT_UID;
+
+    @Override
+    public void setCurentUID(Integer uid) {
+        this.currentUID = uid;
+        LOGGER.debug("SiteService: current uid is reset to {}", uid);
+    }
+
+    private Integer getCurrentUID() {
+        return this.currentUID;
+    }
+
     @Override
     public List<CommentVo> recentComments(int limit) {
         LOGGER.debug("Enter recentComments method:limit={}", limit);
@@ -58,7 +71,9 @@ public class SiteServiceImpl implements ISiteService {
             limit = 10;
         }
         CommentVoExample example = new CommentVoExample();
+        example.createCriteria().andOwnerIdEqualTo(getCurrentUID());
         example.setOrderByClause("created desc");
+
         PageHelper.startPage(1, limit);
         List<CommentVo> byPage = commentDao.selectByExampleWithBLOBs(example);
         LOGGER.debug("Exit recentComments method");
@@ -72,7 +87,7 @@ public class SiteServiceImpl implements ISiteService {
             limit = 10;
         }
         ContentVoExample example = new ContentVoExample();
-        example.createCriteria().andStatusEqualTo(Types.PUBLISH.getType()).andTypeEqualTo(Types.ARTICLE.getType());
+        example.createCriteria().andStatusEqualTo(Types.PUBLISH.getType()).andTypeEqualTo(Types.ARTICLE.getType()).andAuthorIdEqualTo(getCurrentUID());
         example.setOrderByClause("created desc");
         PageHelper.startPage(1, limit);
         List<ContentVo> list = contentDao.selectByExample(example);
@@ -157,15 +172,20 @@ public class SiteServiceImpl implements ISiteService {
         StatisticsBo statistics = new StatisticsBo();
 
         ContentVoExample contentVoExample = new ContentVoExample();
-        contentVoExample.createCriteria().andTypeEqualTo(Types.ARTICLE.getType()).andStatusEqualTo(Types.PUBLISH.getType());
+        contentVoExample.createCriteria().andTypeEqualTo(Types.ARTICLE.getType()).andStatusEqualTo(Types.PUBLISH.getType()).andAuthorIdEqualTo(getCurrentUID());
         Long articles =   contentDao.countByExample(contentVoExample);
 
-        Long comments = commentDao.countByExample(new CommentVoExample());
+        CommentVoExample commentVoExample = new CommentVoExample();
+        commentVoExample.createCriteria().andOwnerIdEqualTo(getCurrentUID());
+        Long comments = commentDao.countByExample(commentVoExample);
 
-        Long attachs = attachDao.countByExample(new AttachVoExample());
+        AttachVoExample attachVoExample = new AttachVoExample();
+        attachVoExample.createCriteria().andAuthorIdEqualTo(getCurrentUID());
+
+        Long attachs = attachDao.countByExample(attachVoExample);
 
         MetaVoExample metaVoExample = new MetaVoExample();
-        metaVoExample.createCriteria().andTypeEqualTo(Types.LINK.getType());
+        metaVoExample.createCriteria().andTypeEqualTo(Types.LINK.getType()).andParentEqualTo(getCurrentUID());
         Long links = metaDao.countByExample(metaVoExample);
 
         statistics.setArticles(articles);
@@ -179,18 +199,23 @@ public class SiteServiceImpl implements ISiteService {
     @Override
     public List<ArchiveBo> getArchives() {
         LOGGER.debug("Enter getArchives method");
-        List<ArchiveBo> archives = contentDao.findReturnArchiveBo();
+
+//        List<ArchiveBo> archives = contentDao.findReturnArchiveBo();
+        List<ArchiveBo> archives = contentDao.findReturnArchiveBoWithUID(getCurrentUID());
         if (null != archives) {
+
             archives.forEach(archive -> {
                 ContentVoExample example = new ContentVoExample();
                 ContentVoExample.Criteria criteria = example.createCriteria().andTypeEqualTo(Types.ARTICLE.getType()).andStatusEqualTo(Types.PUBLISH.getType());
                 example.setOrderByClause("created desc");
                 String date = archive.getDate();
                 Date sd = DateKit.dateFormat(date, "yyyy年MM月");
+                criteria.andAuthorIdEqualTo(getCurrentUID());
                 int start = DateKit.getUnixTimeByDate(sd);
                 int end = DateKit.getUnixTimeByDate(DateKit.dateAdd(DateKit.INTERVAL_MONTH, sd, 1)) - 1;
                 criteria.andCreatedGreaterThan(start);
                 criteria.andCreatedLessThan(end);
+
                 List<ContentVo> contentss = contentDao.selectByExample(example);
                 archive.setArticles(contentss);
             });

@@ -9,11 +9,13 @@ import java.util.List;
  */
 public interface ILogService {
 
+    void setCurrentUID(Integer uid);
     /**
      * 保存操作日志
      *
      * @param logVo
      */
+
     void insertLog(LogVo logVo);
 
     /**

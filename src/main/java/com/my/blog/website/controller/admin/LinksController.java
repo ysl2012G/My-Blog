@@ -26,8 +26,14 @@ public class LinksController extends BaseController {
     @Resource
     private IMetaService metasService;
 
+    private void initUID(Integer uid) {
+        metasService.setCurrentUID(uid);
+        this.setCurrentUID(uid);
+    }
+
     @GetMapping(value = "")
     public String index(Model model) {
+        this.initUID(this.getUid());
         List<MetaVo> metas = metasService.getMetas(Types.LINK.getType());
 //        request.setAttribute("links", metas);
         model.addAttribute("links", metas);
@@ -39,6 +45,7 @@ public class LinksController extends BaseController {
     public RestResponseBo saveLink(@RequestParam String title, @RequestParam String url,
                                    @RequestParam String logo, @RequestParam Integer mid,
                                    @RequestParam(value = "sort", defaultValue = "0") int sort) {
+        this.setCurrentUID(this.getUid());
         try {
             MetaVo metas = new MetaVo();
             metas.setName(title);
@@ -46,6 +53,7 @@ public class LinksController extends BaseController {
             metas.setDescription(logo);
             metas.setSort(sort);
             metas.setType(Types.LINK.getType());
+            metas.setParent(getCurrentUID());
             if (null != mid) {
                 metas.setMid(mid);
                 metasService.update(metas);

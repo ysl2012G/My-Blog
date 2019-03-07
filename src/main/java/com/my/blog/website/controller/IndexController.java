@@ -11,16 +11,17 @@ import com.my.blog.website.model.Bo.RestResponseBo;
 import com.my.blog.website.model.Vo.CommentVo;
 import com.my.blog.website.model.Vo.ContentVo;
 import com.my.blog.website.model.Vo.MetaVo;
-import com.my.blog.website.service.ICommentService;
-import com.my.blog.website.service.IContentService;
-import com.my.blog.website.service.IMetaService;
-import com.my.blog.website.service.ISiteService;
+import com.my.blog.website.model.Vo.UserVo;
+import com.my.blog.website.service.*;
 import com.my.blog.website.utils.IPKit;
 import com.my.blog.website.utils.PatternKit;
 import com.my.blog.website.utils.TaleUtils;
+import com.my.blog.website.utils.Tools;
 import com.vdurmont.emoji.EmojiParser;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.cache.Cache;
+import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -31,7 +32,6 @@ import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import java.net.URLEncoder;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -58,6 +58,35 @@ public class IndexController extends BaseController {
     @Resource
     private ISiteService siteService;
 
+    @Resource
+    private IUserService userService;
+
+    /**
+     * set uid into service
+     */
+    private void initSubjectUID() {
+        Subject subject = SecurityUtils.getSubject();
+        if (subject.isAuthenticated() || subject.isRemembered()) {
+            if (!IsVisitor()) {
+                UserVo user = (UserVo) subject.getPrincipal();
+                initUID(user.getUid());
+            } else {
+                initUID(this.getCurrentUID());
+            }
+
+        } else {
+            initUID(this.getCurrentUID());
+        }
+    }
+
+
+    private void initUID(Integer uid) {
+        contentService.SetCurrentUID(uid);
+        metaService.setCurrentUID(uid);
+        siteService.setCurentUID(uid);
+        setCurrentUID(uid);
+    }
+
 
     /**
      * 首页
@@ -65,7 +94,28 @@ public class IndexController extends BaseController {
      * @return thymeleaf
      */
     @GetMapping(value = "/")
-    public String index(Model model, @RequestParam(value = "limit", defaultValue = "12") int limit) {
+    public String index(Model model,
+                        @RequestParam(value = "user", required = false) String user,
+                        @RequestParam(value = "isVisitor", required = false) boolean visitor,
+                        @RequestParam(value = "limit", defaultValue = "12") int limit) {
+        UserVo userVo = null;
+        this.setVisitor(visitor);
+
+        if (StringUtils.isNotBlank(user)) {
+            //匹配UID
+            if (Tools.isNumber(user)) {
+                userVo = userService.queryUserById(Integer.valueOf(user));
+            } else {
+                //匹配username
+                userVo = userService.queryuserByUsername(user);
+            }
+        }
+        if (userVo != null) {
+//            setCurrentUID(userVo.getUid());
+//            initUID(userVo.getUid());
+            this.setCurrentUID(userVo.getUid());
+
+        }
         return this.index(model, 1, limit);
     }
 
@@ -79,7 +129,15 @@ public class IndexController extends BaseController {
      */
     @GetMapping(value = "page/{p}")
     public String index(Model model, @PathVariable int p, @RequestParam(value = "limit", defaultValue = "12") int limit) {
+//        UserVo user = this.user();
+//        if (user != null && !IsVisitor()) {
+//            setCurrentUID(user.getUid());
+//            initUID(user.getUid());
+//        }
+        initSubjectUID();
         p = p < 0 || p > WebConst.MAX_PAGE ? 1 : p;
+//        contentService.SetCurrentUID(getCurrentUID());
+        LOGGER.debug("insert current uid ");
         PageInfo<ContentVo> articles = contentService.getContents(p, limit);
 //        request.setAttribute("articles", articles);
         model.addAttribute("articles", articles);
@@ -167,10 +225,15 @@ public class IndexController extends BaseController {
      * @param session Session
      * @param response Http Response
      */
-    @RequestMapping("logout")
-    public void logout(HttpSession session, HttpServletResponse response) {
-        TaleUtils.logout(session, response);
-    }
+//    @RequestMapping("/adminlogout")
+//    public void logout(HttpSession session, HttpServletResponse response) {
+//        reset();
+//        Subject subject = SecurityUtils.getSubject();
+//        subject.logout();
+//        LOGGER.debug("shiro subject logout");
+//
+//
+//    }
 
     /**
      * 评论操作
@@ -233,6 +296,11 @@ public class IndexController extends BaseController {
         author = EmojiParser.parseToAliases(author);
         text = EmojiParser.parseToAliases(text);
 
+        /**
+         * 查找当前content id 的author id
+         */
+        ContentVo content = contentService.getContents(cid + "");
+
         CommentVo comments = new CommentVo();
         comments.setAuthor(author);
         comments.setCid(cid);
@@ -240,10 +308,11 @@ public class IndexController extends BaseController {
         comments.setUrl(url);
         comments.setContent(text);
         comments.setMail(mail);
-        //TODO
         comments.setParent(coid);
+        comments.setOwnerId(content.getAuthorId());
         try {
             String result = commentService.insertComment(comments);
+
             cookie("tale_remember_author", URLEncoder.encode(author, "UTF-8"), 7 * 24 * 60 * 60, response);
             cookie("tale_remember_mail", URLEncoder.encode(mail, "UTF-8"), 7 * 24 * 60 * 60, response);
             if (StringUtils.isNotBlank(url)) {
@@ -282,12 +351,15 @@ public class IndexController extends BaseController {
 //    @GetMapping(value = "category/{keyword}")
 //    public String categories(Model model, @PathVariable String keyword,
 //                             @PathVariable int page, @RequestParam(value = "limit", defaultValue = "12") int limit) {
+        initSubjectUID();
         page = page < 0 || page > WebConst.MAX_PAGE ? 1 : page;
+//        metaService.setCurrentUID(getCurrentUID());
         MetaDto metaDto = metaService.getMeta(Types.CATEGORY.getType(), keyword);
         if (null == metaDto) {
             return this.render_404();
         }
 
+//        contentService.SetCurrentUID(getCurrentUID());
         PageInfo<ContentVo> contentsPaginator = contentService.getArticles(metaDto.getMid(), page, limit);
 
         model.addAttribute("articles", contentsPaginator);
@@ -305,6 +377,8 @@ public class IndexController extends BaseController {
      */
     @GetMapping(value = "archives")
     public String archives(Model model) {
+        initSubjectUID();
+//        siteService.setCurentUID(getUid());
         List<ArchiveBo> archives = siteService.getArchives();
         model.addAttribute("archives", archives);
         return this.render("archives");
@@ -317,6 +391,8 @@ public class IndexController extends BaseController {
      */
     @GetMapping(value = "links")
     public String links(Model model) {
+        initSubjectUID();
+//        metaService.setCurrentUID(getCurrentUID());
         List<MetaVo> links = metaService.getMetas(Types.LINK.getType());
         model.addAttribute("links", links);
         return this.render("links");
@@ -327,6 +403,8 @@ public class IndexController extends BaseController {
      */
     @GetMapping(value = "/{pagename}")
     public String page(Model model, @PathVariable String pagename, @RequestParam(value = "cp", defaultValue = "1") String cp) {
+//        contentService.SetCurrentUID(getCurrentUID());
+        initSubjectUID();
         ContentVo contents = contentService.getContents(pagename);
         if (null == contents || "draft".equals(contents.getStatus())) {
             return this.render_404();
@@ -350,6 +428,8 @@ public class IndexController extends BaseController {
     @GetMapping("/{pagename}/preview")
     public String pagePrewview(Model model, @PathVariable(value = "pagename") String
             pagename, @RequestParam(value = "cp", defaultValue = "1") String cp) {
+        initSubjectUID();
+//        contentService.SetCurrentUID(getCurrentUID());
         ContentVo contents = contentService.getContents(pagename);
         if (null == contents) {
             return this.render_404();
@@ -374,7 +454,9 @@ public class IndexController extends BaseController {
 
     @GetMapping(value = "search/{keyword}/{page}")
     public String search(Model model, @PathVariable String keyword, @PathVariable int page, @RequestParam(value = "limit", defaultValue = "12") int limit) {
+        initSubjectUID();
         page = page < 0 || page > WebConst.MAX_PAGE ? 1 : page;
+//        contentService.SetCurrentUID(getCurrentUID());
         PageInfo<ContentVo> articles = contentService.getArticles(keyword, page, limit);
         model.addAttribute("articles", articles);
         model.addAttribute("type", "搜索");
@@ -436,15 +518,17 @@ public class IndexController extends BaseController {
      */
     @GetMapping(value = "tag/{name}")
     public String tags(Model model, @PathVariable String name, @RequestParam(value = "page", defaultValue = "1") int page, @RequestParam(value = "limit", defaultValue = "12") int limit) {
-
+        initSubjectUID();
         page = page < 0 || page > WebConst.MAX_PAGE ? 1 : page;
 //        对于空格的特殊处理
         name = name.replaceAll("\\+", " ");
+//        metaService.setCurrentUID(getCurrentUID());
         MetaDto metaDto = metaService.getMeta(Types.TAG.getType(), name);
         if (null == metaDto) {
             return this.render_404();
         }
 
+//        contentService.SetCurrentUID(getCurrentUID());
         PageInfo<ContentVo> contentsPaginator = contentService.getArticles(metaDto.getMid(), page, limit);
         model.addAttribute("articles", contentsPaginator);
         model.addAttribute("meta", metaDto);

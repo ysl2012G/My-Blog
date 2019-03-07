@@ -41,11 +41,19 @@ public class SettingController extends BaseController {
     @Resource
     private ISiteService siteService;
 
+    private void initUID(Integer uid) {
+        logService.setCurrentUID(uid);
+        siteService.setCurentUID(uid);
+        this.setCurrentUID(uid);
+    }
+
     /**
      * 系统设置
      */
     @GetMapping(value = "")
     public String setting(Model model) {
+        //TODO: 把OPtions也改成Multi
+        this.initUID(this.getUid());
         List<OptionVo> voList = optionService.getOptions();
         Map<String, String> options = new HashMap<>();
         voList.forEach((option) -> {
@@ -65,6 +73,7 @@ public class SettingController extends BaseController {
     @PostMapping(value = "")
     @ResponseBody
     public RestResponseBo saveSetting(@RequestParam() Map<String, String> options, HttpServletRequest request) {
+        this.initUID(this.getUid());
         try {
 //            Map<String, String[]> parameterMap = request.getParameterMap();
             Map<String, String> querys = new HashMap<>();
@@ -75,7 +84,7 @@ public class SettingController extends BaseController {
             if (StringUtils.isNotBlank(site_theme)) {
                 BaseController.THEME = "themes/" + site_theme;
             }
-            logService.insertLog(LogActions.SYS_SETTING.getAction(), GsonUtils.toJsonString(querys), request.getRemoteAddr(), this.getUid(request));
+            logService.insertLog(LogActions.SYS_SETTING.getAction(), GsonUtils.toJsonString(querys), request.getRemoteAddr(), this.getUid());
             return RestResponseBo.ok();
         } catch (Exception e) {
             String msg = "保存设置失败";
@@ -94,12 +103,13 @@ public class SettingController extends BaseController {
     @ResponseBody
     public RestResponseBo backup(@RequestParam String bk_type, @RequestParam String bk_path,
                                  HttpServletRequest request) {
+        this.initUID(this.getUid());
         if (StringUtils.isBlank(bk_type)) {
             return RestResponseBo.fail("请确认信息输入完整");
         }
         try {
             BackResponseBo backResponse = siteService.backup(bk_type, bk_path, "yyyyMMddHHmm");
-            logService.insertLog(LogActions.SYS_BACKUP.getAction(), null, request.getRemoteAddr(), this.getUid(request));
+            logService.insertLog(LogActions.SYS_BACKUP.getAction(), null, request.getRemoteAddr(), this.getUid());
             return RestResponseBo.ok(backResponse);
         } catch (Exception e) {
             String msg = "备份失败";

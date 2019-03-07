@@ -48,6 +48,19 @@ public class ContentServiceImpl implements IContentService {
     @Resource
     private ICommentService commentService;
 
+    private static final Integer DEFAULT_UID = 1;
+    private Integer currentUID = DEFAULT_UID;
+
+    @Override
+    public void SetCurrentUID(Integer uid) {
+        LOGGER.debug("ContentService: current uid is reset to {}", uid);
+        this.currentUID = uid;
+    }
+
+    private Integer getCurrentUID() {
+        return this.currentUID;
+    }
+
     @Override
     @Transactional
     public String publish(ContentVo contents) {
@@ -106,7 +119,7 @@ public class ContentServiceImpl implements IContentService {
         LOGGER.debug("Enter getContents method");
         ContentVoExample example = new ContentVoExample();
         example.setOrderByClause("created desc");
-        example.createCriteria().andTypeEqualTo(Types.ARTICLE.getType()).andStatusEqualTo(Types.PUBLISH.getType());
+        example.createCriteria().andTypeEqualTo(Types.ARTICLE.getType()).andStatusEqualTo(Types.PUBLISH.getType()).andAuthorIdEqualTo(getCurrentUID());
         PageHelper.startPage(p, limit);
         List<ContentVo> data = contentDao.selectByExampleWithBLOBs(example);
         PageInfo<ContentVo> pageInfo = new PageInfo<>(data);
@@ -122,7 +135,7 @@ public class ContentServiceImpl implements IContentService {
                 return contentVo;
             } else {
                 ContentVoExample contentVoExample = new ContentVoExample();
-                contentVoExample.createCriteria().andSlugEqualTo(id);
+                contentVoExample.createCriteria().andSlugEqualTo(id).andAuthorIdEqualTo(getCurrentUID());
                 List<ContentVo> contentVos = contentDao.selectByExampleWithBLOBs(contentVoExample);
                 if (contentVos.size() != 1) {
                     throw new TipException("query content by id and return is not one");
@@ -150,9 +163,11 @@ public class ContentServiceImpl implements IContentService {
      */
     @Override
     public PageInfo<ContentVo> getArticles(Integer mid, int page, int limit) {
-        int total = metaDao.countWithSql(mid);
+//        int total = metaDao.countWithSql(mid);
+        int total = metaDao.countWithSqlAndUID(getCurrentUID(), mid);
         PageHelper.startPage(page, limit);
-        List<ContentVo> list = contentDao.findByCatalog(mid);
+//        List<ContentVo> list = contentDao.findByCatalog(mid);
+        List<ContentVo> list = contentDao.findByCatalogAndUID(getCurrentUID(), mid);
         PageInfo<ContentVo> paginator = new PageInfo<>(list);
         paginator.setTotal(total);
         return paginator;
@@ -163,6 +178,7 @@ public class ContentServiceImpl implements IContentService {
         PageHelper.startPage(page, limit);
         ContentVoExample contentVoExample = new ContentVoExample();
         ContentVoExample.Criteria criteria = contentVoExample.createCriteria();
+        criteria.andAuthorIdEqualTo(getCurrentUID());
         criteria.andTypeEqualTo(Types.ARTICLE.getType());
         criteria.andStatusEqualTo(Types.PUBLISH.getType());
         criteria.andTitleLike("%" + keyword + "%");
@@ -197,6 +213,15 @@ public class ContentServiceImpl implements IContentService {
         contentVo.setCategories(newCatefory);
         ContentVoExample example = new ContentVoExample();
         example.createCriteria().andCategoriesEqualTo(ordinal);
+        contentDao.updateByExampleSelective(contentVo, example);
+    }
+
+    @Override
+    public void updateCategoryWithUID(Integer uid, String ordinal, String newCategory) {
+        ContentVo contentVo = new ContentVo();
+        contentVo.setCategories(newCategory);
+        ContentVoExample example = new ContentVoExample();
+        example.createCriteria().andCategoriesEqualTo(ordinal).andAuthorIdEqualTo(uid);
         contentDao.updateByExampleSelective(contentVo, example);
     }
 

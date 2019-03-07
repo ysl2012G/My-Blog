@@ -10,6 +10,8 @@ import java.util.List;
  * Created by BlueT on 2017/3/17.
  */
 public interface IMetaService {
+
+    void setCurrentUID(Integer uid);
     /**
      * 根据类型和名字查询项
      *

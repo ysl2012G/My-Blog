@@ -27,8 +27,14 @@ public class CategoryController extends BaseController {
     @Resource
     private IMetaService metasService;
 
+    private void initUID(Integer uid) {
+        metasService.setCurrentUID(uid);
+        this.setCurrentUID(uid);
+    }
+
     @GetMapping(value = "")
     public String index(Model model) {
+        this.initUID(this.getUid());
         List<MetaDto> categories = metasService.getMetaList(Types.CATEGORY.getType(), null, WebConst.MAX_POSTS);
         List<MetaDto> tags = metasService.getMetaList(Types.TAG.getType(), null, WebConst.MAX_POSTS);
 //        request.setAttribute("categories", categories);
@@ -41,6 +47,7 @@ public class CategoryController extends BaseController {
     @PostMapping(value = "save")
     @ResponseBody
     public RestResponseBo saveCategory(@RequestParam String cname, @RequestParam Integer mid) {
+        this.initUID(this.getUid());
         try {
             metasService.saveMeta(Types.CATEGORY.getType(), cname, mid);
         } catch (Exception e) {
@@ -54,6 +61,7 @@ public class CategoryController extends BaseController {
     @RequestMapping(value = "delete")
     @ResponseBody
     public RestResponseBo delete(@RequestParam int mid) {
+        this.initUID(this.getUid());
         try {
             metasService.delete(mid);
         } catch (Exception e) {
